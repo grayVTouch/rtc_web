@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="file/logo.png">
+    <title>OJBK-嗨聊</title>
+    <link rel="stylesheet" href="plugin/Run/base.css">
+    <link rel="stylesheet" href="css/public.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="load-anime"></div>
+    </div>
+    <!-- 加载层 -->
+    <div id="app" class="hide">
+        <!-- 登录界面 -->
+        <div class="login">
+            <!-- 扫码登陆页面 -->
+            <div class="qrcode" v-if="val.mode == 'qrcode'">
+                <div class="top"><img :src="val.qrcode" class="image qr-code"></div>
+                <div class="mid">使用手机OJBK-嗨聊扫码登录</div>
+                <div class="btm">网页版OJBK-嗨聊需要配合手机使用</div>
+            </div>
+
+            <!-- 登录提示页面 -->
+            <div class="user" v-if="val.mode == 'user'">
+                <div class="top"><img :src="val.avatar" class="image avatar"></div>
+                <div class="btm">
+                    <button class="btn" @click="switchUser">切换账号</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="lib/jquery.js"></script>
+    <script src="lib/layer/layer.js"></script>
+    <script src="lib/vue.js"></script>
+    <script src="plugin/SmallJs/SmallJs.js?version=30.0"></script>
+    <script src="lib/RTC.js?version=30.0"></script>
+    <script src="js/global.js?version=30.0"></script>
+    <script src="js/mixin.js?version=30.0"></script>
+    <script src="js/login.js?version=30.0"></script>
+</body>
+</html>

@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html">
+    <link rel="icon" href="file/logo.png">
+    <title>OJBK-嗨聊</title>
+    <link rel="stylesheet" href="plugin/Run/base.css?version=30.0">
+    <link rel="stylesheet" href="css/public.css?version=30.0">
+    <link rel="stylesheet" href="css/index.css?version=30.0">
+</head>
+<body>
+<div class="loading" id="loading">
+    <div class="load-anime"></div>
+</div>
+
+<div id="app" class="app hide">
+    <div class="in">
+        <div class="left">
+
+            <!-- 头像 -->
+            <div class="avatar">
+                <div class="left">
+                    <div class="avatar" @click.stop="switchAvatarEvent" :data-userId="user.id">
+                        <div class="in">
+                            <div class="text" v-if="!isValid(user.avatar)">{{ user.nickname ? user.nickname[0].toUpperCase() : '' }}</div>
+                            <div class="avatar" v-if="isValid(user.avatar)"><img :src="user.avatar" class="image"></div>
+                        </div>
+                    </div>
+                    <div class="username">{{ user.nickname }}</div>
+                </div>
+                <div class="right">
+                    <div class="menu" @click.stop="showFunction">
+                        <img src="file/menu.png" class="image">
+                        <transition name="fade-bottom">
+                            <div class="functions" v-show="val.showFunction" @click.stop>
+                                <div class="function" @click="logout">
+                                    <div class="left"><img src="file/logout.png" class="image"></div>
+                                    <div class="right">退出</div>
+                                </div>
+                            </div>
+                        </transition>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 好友搜索 -->
+            <div class="search">
+                <div>
+                    <div class="c-search">
+                        <div class="in">
+                            <div class="left"><img src="file/search.png" class="image"></div>
+                            <div class="right"><input type="text" ref="search" class="search-input" @input="searchEvent" placeholder="搜索"></div>
+
+                            <div class="res" v-if="val.showSearch">
+
+                                <div class="empty" v-if="search.friend.length < 1 && search.group.length < 1" @click.stop>找不到匹配的结果</div>
+
+                                <div class="item friend" v-if="search.friend.length > 0">
+                                    <div class="title" @click.stop>好友</div>
+                                    <div class="list">
+
+                                        <div class="line"  v-for="v in search.friend" @click="switchSessionForSearchByTypeAndTargetId('private' , v.friend_id)">
+                                            <div class="in">
+                                                <div class="left">
+                                                    <div v-if="!isValid(v.friend.avatar)" class="text">{{ v.alias ? v.alias[0].toUpperCase() : '' }}</div>
+                                                    <img v-if="isValid(v.friend.avatar)" :src="v.friend.avatar" class="image">
+                                                </div>
+                                                <div class="right">{{ v.alias }}</div>
+                                            </div>
+                                        </div>
+
+                                        <!--<div class="line hide">-->
+                                        <!--<div class="in">-->
+                                        <!--<div class="left">-->
+                                        <!--<div class="text">R</div>-->
+                                        <!--<img src="file/avatar.png" class="image hide">-->
+                                        <!--</div>-->
+                                        <!--<div class="right">A00志成电脑张加假</div>-->
+                                        <!--</div>-->
+                                        <!--</div>-->
+
+                                    </div>
+                                </div>
+
+                                <div class="item group" v-if="search.group.length > 0">
+                                    <div class="title" @click.stop>群组</div>
+                                    <div class="list">
+
+                                        <div class="line" v-for="v in search.group"  @click="switchSessionByTypeAndTargetId('group' , v.group_id)">
+                                            <div class="in">
+                                                <div class="left group-avatar-box">
+                                                    <div class="item" v-for="(m,k) in v.group.member_avatar">
+                                                        <template v-if="k < val.groupAvatarLimit">
+                                                            <div class="text" v-if="!isValid(m.avatar)">{{ m.alias ? m.alias[0].toUpperCase() : '' }}</div>
+                                                            <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="right">{{ v.group.name }}</div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 导航切换 -->
+            <div class="menu">
+                <div class="in">
+                    <!-- 消息 -->
+                    <div class="item message" @click="val.tab = 'session'">
+                        <img src="file/message_focus.png" class="image" v-if="val.tab == 'session'">
+                        <img src="file/message.png" class="image" v-if="val.tab != 'session'">
+                    </div>
+                    <!-- 联系人-->
+                    <div class="item relation" @click="val.tab = 'relation'">
+                        <img src="file/relation_focus.png" v-if="val.tab == 'relation'" class="image">
+                        <img src="file/relation.png" v-if="val.tab != 'relation'" class="image">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 选项切换 -->
+            <div class="tab">
+
+                <!-- 会话列表 -->
+                <div class="session" v-show="val.tab == 'session'" ref="session">
+
+                    <div class="line" v-for="v in session" :ref="'session_' + v.id" :data-sessionId="v.id" :data-id="v.id" @mousedown.stop="sessionRightKeyEvent" @click="switchSessionEvent" :class="{
+                        top: v.top >= 1 ,
+                        cur: v.id == sessionForCur.id ,
+                        mute: v.can_notice < 1 ,
+                    }" :data-id="v.id">
+                        <div class="in">
+                            <div class="left">
+                                <div class="system-ico" v-if="v.type == 'system'">
+                                    <div class="ico"><img src="file/system.png" class="image"></div>
+                                </div>
+
+                                <div class="user-avatar" v-if="v.type == 'private'">
+                                    <div class="text" v-if="!isValid(v.other.avatar)">{{ v.other.nickname ? v.other.nickname[0].toUpperCase() : '' }}</div>
+                                    <div class="avatar" v-if="isValid(v.other.avatar)"><img :src="v.other.avatar" class="image"></div>
+                                </div>
+
+                                <div class="group-avatar-box" v-if="v.type == 'group'">
+                                    <div class="item" v-for="(m,k) in v.group.member_avatar">
+                                        <template v-if="k < val.groupAvatarLimit">
+                                            <div class="text" v-if="!isValid(m.avatar)">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                            <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="unread" :class="
+                                    v.unread < 1 ? 'hide' :
+                                        (v.unread < 10 ?
+                                            'min-number' :
+                                            (v.unread < 100 ? 'mid-number' : 'max-number')
+                                        )">
+                                    <template v-if="
+                                    ['private' , 'group'].indexOf(v.type) >= 0 &&
+                                    v.can_notice > 0 &&
+                                    v.unread > 0">{{ v.unread }}</template>
+                                    <template v-if="v.type == 'system' && v.unread > 0">{{ v.unread }}</template>
+                                </div>
+                            </div>
+                            <div class="right">
+                                <div class="top">
+                                    <div class="username">
+                                        <template v-if="v.type == 'private'">{{ v.other ? v.other.nickname : '' }}</template>
+                                        <template v-if="v.type == 'group'">{{ v.group ? v.group.name : '' }}</template>
+                                        <template v-if="v.type == 'system'">系统公告</template>
+                                    </div>
+                                    <div class="time">
+                                        <template v-if="val.chat.indexOf(v.type) >= 0">{{ v.recent_message ? v.recent_message.format_time : '' }}</template>
+                                        <template v-if="v.type == 'system'">{{ v.recent ? v.recent.format_time : '' }}</template>
+                                    </div>
+                                </div>
+                                <div class="btm">
+                                    <div class="message" v-if="val.chat.indexOf(v.type) >= 0" v-html="v.recent_message ? v.recent_message.message : ''"></div>
+                                    <div class="message" v-if="v.type == 'system'" v-html="v.recent ? v.recent.content : ''"></div>
+                                    <!-- 消息免打扰 -->
+                                    <div class="mute" v-if="v.can_notice < 1"><img src="./file/mute.png" class="image"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 联系人|群 -->
+                <div class="relation" v-show="val.tab == 'relation'">
+
+                    <div class="item">
+                        <div class="title">群组</div>
+                        <div class="list">
+                            <div class="line" v-for="v in relation.group" :class="detailForGroup.group_id == v.group_id ? 'cur' : ''" :data-groupId="v.group_id" @click="switchGroupEvent">
+                                <div class="in">
+                                    <div class="left group-avatar-box">
+
+                                        <div class="item" v-for="(m,k) in v.group.member_avatar">
+                                            <template v-if="k < val.groupAvatarLimit">
+                                                <div class="text" v-if="!m.avatar">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                                <div class="avatar" v-else><img :src="m.avatar" class="image"></div>
+                                            </template>
+                                        </div>
+
+                                    </div>
+                                    <div class="right">{{ v.group.name }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="item" v-for="v in relation.friend">
+                        <div class="title">{{ v.group }}</div>
+                        <div class="list">
+                            <div class="line" v-for="user in v.list" :class="detailForFriend.friend_id == user.friend_id ? 'cur' : ''" :data-friendId="user.friend_id" @click="switchFriendEvent">
+                                <div class="in">
+                                    <div class="left">
+                                        <template>
+                                            <div class="text" v-if="!user.friend.avatar">{{ user.alias ? user.alias[0].toUpperCase() : '' }}</div>
+                                            <div class="avatar" v-else><img :src="user.friend.avatar ? user.friend.avatar : val.avatar" class="image"></div>
+                                        </template>
+                                    </div>
+                                    <div class="right">{{ user.alias }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="right">
+            <div class="tab-content histories" v-show="val.tab == 'session'">
+                <div class="history initialize" v-if="!isValid(sessionForCur.id)">
+                    <!-- 标题 -->
+                    <div class="title">
+                        <div class="in"></div>
+                    </div>
+                    <div class="content">
+                        <div class="top"><img src="file/logo.png" class="image"></div>
+                        <div class="btm">您尚未选择会话</div>
+                    </div>
+                </div>
+
+                <!-- 历史聊天记录 -->
+                <div class="history" v-for="v in copySession" :data-id="v.id" v-show="v.id == sessionForCur.id">
+                    <!--<div class="history">-->
+                    <!-- 标题 -->
+                    <div class="title">
+                        <!-- 用户 -->
+                        <div class="name" :data-sessionId="v.id" @click.stop="switchMemberEvent">
+                            <div class="in">
+                                <template v-if="v.type == 'private'">{{ v.other ? v.other.nickname : '' }}</template>
+                                <template v-if="v.type == 'group'">{{ v.group ? v.group.name : '' }}</template>
+                                <template v-if="v.type == 'system'">{{ val.system }}</template>
+                                <img src="file/dir.png" v-if="val.chat.indexOf(v.type) >= 0" class="image" :class="val.member == 'show' ? 'spread' : 'shrink'"></div>
+                        </div>
+                        <div class="users-outer" @click.stop="hideUserInfo" v-if="v.type != 'system'">
+                            <transition name="fade">
+                                <!-- 用户列表 -->
+                                <div class="users-inner" v-if="val.member == 'show'">
+                                    <div class="in" @scroll="scrollEventForUser" :data-sessionId="v.id">
+
+                                        <!-- 用户 -->
+                                        <template v-if="v.type == 'private'">
+                                            <div class="item c-item user" v-for="m in memberForUser[v.id].list" :data-userId="m.id" @click.stop="switchAvatarEvent">
+                                                <div class="top avatar">
+                                                    <div class="text" v-if="!isValid(m.avatar)">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                                    <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                                </div>
+                                                <div class="btm name">{{ m.nickname }}</div>
+                                            </div>
+                                        </template>
+
+                                        <template v-if="v.type == 'group'">
+                                            <div class="item c-item group" v-for="m in memberForGroup[v.id].list" :data-userId="m.user_id" @click.stop="switchAvatarEvent">
+                                                <div class="top avatar">
+                                                    <div class="text" v-if="!isValid(m.user.avatar)">{{ m.user.nickname ? m.user.nickname[0].toUpperCase() : '' }}</div>
+                                                    <div class="avatar" v-if="isValid(m.user.avatar)"><img :src="m.user.avatar" class="image"></div>
+                                                </div>
+                                                <div class="btm name">{{ m.alias }}</div>
+                                            </div>
+                                        </template>
+
+                                        <!-- 新增 -->
+                                        <div class="item function add" :data-sessionId="v.id" @click="addEvent">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+
+                                        <!-- 减少 -->
+                                        <div class="item function sub" :data-sessionId="v.id" v-if="v.type == 'group' && v.group && v.group.user_id == user.id" @click="subEvent">
+                                            <div class="horizontal"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                    </div>
+
+                    <!-- 消息列表 -->
+                    <div class="message" :class="v.type">
+                        <div class="in" :ref="'message_in_for_history_' + v.id" @scroll="scrollEventForHistory" :data-sessionId="v.id">
+
+                            <template v-if="v.type == 'private'"><div class="line last" v-if="historyForPrivate[v.id].noMoreForEarlier">没有更多数据了</div></template>
+                            <template v-if="v.type == 'group'"><div class="line last" v-if="historyForGroup[v.id].noMoreForEarlier">没有更多数据了</div></template>
+                            <template v-if="v.type == 'system'"><div class="line last" v-if="historyForSystem[v.id].noMoreForEarlier">没有更多数据了</div></template>
+
+                            <template v-if="v.type == 'private'"><div class="line loading" v-show="historyForPrivate[v.id].loading">加载中...</div></template>
+                            <template v-if="v.type == 'group'"><div class="line loading" v-show="historyForGroup[v.id].loading">加载中...</div></template>
+                            <template v-if="v.type == 'system'"><div class="line loading" v-show="historyForSystem[v.id].loading">加载中...</div></template>
+
+                            <template v-if="v.type == 'private'">
+                                <template v-for="v1 in historyForPrivate[v.id].historyForGroup">
+                                    <!--<div class="line notification" v-if="v1.type == 'notification'">{{ v1.data.message }}</div>-->
+
+                                    <!-- 消息分组 -->
+                                    <div class="group" v-if="v1.type == 'message'">
+                                        <div class="time" v-if="!v1.temp">{{ v1.attr }}</div>
+
+                                        <!-- 消息行 -->
+                                        <div class="line msg" v-for="m in v1.list" :data-sessionId="v.id" :data-messageId="m.id" :class="{
+                                                self: m.user_id == user.id ,
+                                                other: m.user_id != user.id ,
+                                                notification: ['notification' , 'withdraw'].indexOf(m.type) >= 0 ,
+                                                text: m.type == 'text' ,
+                                                image: m.type == 'image' ,
+                                                card: m.type == 'card' ,
+                                                file: m.type == 'file' ,
+                                                voice: m.type == 'voice' ,
+                                                voice_call: m.type == 'voice_call' ,
+                                                burn: m.flag == 'burn' ,
+                                                }">
+                                            <div class="avatar" :data-userId="m.user_id" @click.stop="switchAvatarEvent" v-if="['notification' , 'withdraw'].indexOf(m.type) < 0">
+                                                <div class="text" v-if="!isValid(m.user.avatar)">{{ m.user.nickname ? m.user.nickname[0].toUpperCase() : '' }}</div>
+                                                <div class="avatar" v-if="isValid(m.user.avatar)"><img :src="m.user ? m.user.avatar : val.avatar" class="image"></div>
+                                            </div>
+                                            <div class="content">
+                                                <div class="in" :data-sessionId="v.id" :data-messageId="m.id" @click="messageClickForPrivateEvent" @mousedown.stop="messageRightKeyEvent">
+                                                    <!-- 文本 -->
+                                                    <div class="text" v-if="m.type == 'text'" v-html="m.message"></div>
+                                                    <!-- 其他消息类型 -->
+                                                    <div class="text" v-if="m.type == 'video'" v-html="m.message"></div>
+
+
+                                                    <!-- 消息撤回 -->
+                                                    <div class="notification" v-if="m.type == 'withdraw'">{{ m.message }}</div>
+                                                    <!-- 系统通知 -->
+                                                    <div class="notification" v-if="m.type == 'notification'">{{ m.message }}</div>
+                                                    <!-- 图片 -->
+                                                    <div class="image" v-if="m.type == 'image'">
+                                                        <img :src="m.message" :ref="'image_' + v.id + '_' + m.id" :data-sessionId="v.id" :data-messageId="m.id" :width="m.extra.clientW" :height="m.extra.clientH" @click="openImageEvent" class="image">
+                                                    </div>
+                                                    <!-- 名片 -->
+                                                    <div class="card" v-if="m.type == 'card'" :data-userId="m.user_for_card.id" @click.stop="switchAvatarEvent" >
+                                                        <div class="user">
+                                                            <div class="in">
+                                                                <div class="avatar">
+                                                                    <div class="in">
+                                                                        <div class="text" v-if="!isValid(m.user_for_card.avatar)">{{ m.user_for_card.nickname ? m.user_for_card.nickname[0].toUpperCase() : '' }}</div>
+                                                                        <div class="avatar" v-if="isValid(m.user_for_card.avatar)"><img :src="m.user_for_card.avatar" class="image"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="info">
+                                                                    <div class="name">{{ m.user_for_card.nickname }}</div>
+                                                                    <div class="id">ID: {{ m.user_for_card.id }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="title">
+                                                            <div class="left">个人名片</div>
+                                                            <div class="right">{{ m.format_time }}</div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 语音消息 -->
+                                                    <div class="voice" v-if="m.type == 'voice'" :class="m.self_is_read == 1 ? '' : 'unread'" :data-sessionId="v.id" :data-messageId="m.id" @click.stop="playAudioEvent">
+                                                        <div class="in">
+                                                            <div class="item sender" v-if="m.user_id == user.id">
+                                                                <div class="ico" :ref="'voice_ico_' + v.id + '_' + m.id">
+                                                                    <img src="file/icon_voice3.png" class="image">
+                                                                </div>
+                                                                <div class="time">{{ m.extra }}"</div>
+                                                            </div>
+                                                            <div class="item receiver" v-if="m.user_id != user.id">
+                                                                <div class="time">{{ m.extra }}"</div>
+                                                                <div class="ico" :ref="'voice_ico_' + v.id + '_' + m.id">
+                                                                    <img src="file/icon_voice3.png" class="image">
+                                                                </div>
+                                                            </div>
+                                                            <div class="meida hide">
+                                                                <audio :src="m.message" class="audio" :ref="'audio_' + v.id + '_' + m.id"></audio>
+                                                                <!--<audio src="file/new.mp3" class="audio" :ref="'audio_' + v.id + '_' + m.id"></audio>-->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 语音通话 -->
+                                                    <div class="voice_call" v-if="m.type == 'voice_call'">
+                                                        <div class="in">
+                                                            <div class="item sender" v-if="m.user_id == user.id">
+                                                                <div class="desc">
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您发送了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您收到了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id == user.id">对方已经拒绝</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id != user.id">已拒绝</template>
+                                                                    <template v-if="m.extra.status == 'accept'">通话时长 {{ m.extra.format_time }}</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id == user.id">已取消</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id != user.id">对方已取消</template>
+                                                                </div>
+                                                                <div class="ico"><img src="file/hang.png" class="image"></div>
+                                                            </div>
+                                                            <div class="item receiver" v-if="m.user_id != user.id">
+                                                                <div class="ico"><img src="file/hang.png" class="image"></div>
+                                                                <div class="desc">
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您发送了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您收到了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id == user.id">对方已经拒绝</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id != user.id">已拒绝</template>
+                                                                    <template v-if="m.extra.status == 'accept'">通话时长 {{ m.extra.format_time }}</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id == user.id">已取消</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id != user.id">对方已取消</template>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 文件 -->
+                                                    <div class="file" v-if="m.type == 'file'">
+                                                        <div class="in">
+                                                            <div class="ico"><img src="file/file.png" class="image"></div>
+                                                            <div class="info">
+                                                                <div class="top name">{{ m.extra.name }}</div>
+                                                                <div class="btm size">
+                                                                    <span class="file-size">{{ m.extra.size }}</span>
+                                                                    |
+                                                                    <a :href="m.message" target="_blank" class="link">下载</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 加载状态 -->
+                                                    <div class="status">
+                                                        <img src="file/loading.png" class="image loading-animation" v-if="m.loading">
+                                                        <img src="file/burn.png" class="image" v-if="m.flag == 'burn' && m.self_is_read == 1">
+                                                    </div>
+                                                    <!-- 阅后即焚 遮罩层 -->
+                                                    <div class="burn-mask" v-if="m.flag == 'burn' && m.self_is_read == 0">
+                                                        <div class="in"><img src="file/burn.png" class="image"></div>
+                                                    </div>
+                                                    <!-- 或文件上传遮罩层 -->
+                                                    <div class="upload-mask" v-if="m.showUploadMask">
+                                                        <div class="in">{{ m.progress }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="error" :class="m.blocked == 1 ? '' : 'hide'"><img src="file/fail.png" class="image">消息已经发送，但对方拒绝接受</div>
+                                            <div class="error" :class="isValid(m.error) ? '' : 'hide'"><img src="file/fail.png" class="image">{{ m.error }}</div>
+                                        </div>
+
+                                        <!--<div class="line msg other">-->
+                                        <!--<div class="avatar"><img src="file/avatar.png" class="image"></div>-->
+                                        <!--<div class="content">-->
+                                        <!--<div class="in">-->
+                                        <!--<div class="text">内容123456发送接口是否反倒是开发就开始房间昆仑山房价开始大量福克斯的疯狂的事JFK四点零分四大皆空福克斯得分纪录时刻#b2e281#b2e281#b2e281#b2e281#b2e281#b2e281内容123456发送接口是否反倒是开发就开始房间昆仑山房价开始大量福克斯的疯狂的事JFK四点零分四大皆空福克斯得分纪录时刻#b2e281#b2e281#b2e281#b2e281#b2e281#b2e281</div>-->
+                                        <!--<div class="status">-->
+                                        <!--<img src="file/loading.png" class="image loading-animation">-->
+                                        <!--</div>-->
+                                        <!--</div>-->
+                                        <!--</div>-->
+                                        <!--<div class="error hide"><img src="file/fail.png" class="image">消息已经发送，但对方拒绝接受</div>-->
+                                        <!--</div>-->
+                                    </div>
+                                </template>
+                            </template>
+
+                            <template v-if="v.type == 'group'">
+                                <template v-for="v1 in historyForGroup[v.id].historyForGroup">
+                                    <!--<div class="line notification" v-if="v1.type == 'notification'">{{ v1.data.message }}</div>-->
+
+                                    <!-- 消息分组 -->
+                                    <div class="group" v-if="v1.type == 'message'">
+                                        <div class="time" v-if="!v1.temp">{{ v1.attr }}</div>
+
+                                        <!-- 消息行 -->
+                                        <div class="line msg" v-for="m in v1.list" :data-sessionId="v.id" :data-messageId="m.id" :class="{
+                                                self: m.user_id == user.id ,
+                                                other: m.user_id != user.id ,
+                                                notification: ['notification' , 'withdraw'].indexOf(m.type) >= 0 ,
+                                                text: m.type == 'text' ,
+                                                image: m.type == 'image' ,
+                                                card: m.type == 'card' ,
+                                                file: m.type == 'file' ,
+                                                voice: m.type == 'voice' ,
+                                                voice_call: m.type == 'voice_call' ,
+                                                }" @mousedown.stop="messageRightKeyEvent">
+                                            <div class="avatar" :data-userId="m.user_id"  @click.stop="switchAvatarEvent"  v-if="['notification' , 'withdraw'].indexOf(m.type) < 0">
+                                                <div class="text" v-if="!isValid(m.user.avatar)">{{ m.user.nickname ? m.user.nickname[0].toUpperCase() : '' }}</div>
+                                                <div class="avatar" v-if="isValid(m.user.avatar)"><img :src="m.user ? m.user.avatar : val.avatar" class="image"></div>
+                                            </div>
+                                            <div class="content">
+                                                <div class="in">
+
+                                                    <!-- 文本 -->
+                                                    <div class="text" v-if="m.type == 'text'" v-html="m.message"></div>
+                                                    <!-- 其他消息类型 -->
+                                                    <div class="text" v-if="m.type == 'video'" v-html="m.message"></div>
+                                                    <!-- 消息撤回 -->
+                                                    <div class="notification" v-if="m.type == 'withdraw'">{{ m.message }}</div>
+                                                    <!-- 系统通知 -->
+                                                    <div class="notification" v-if="m.type == 'notification'">{{ m.message }}</div>
+                                                    <!-- 图片 -->
+                                                    <div class="image" v-if="m.type == 'image'">
+                                                        <img :src="m.message" :ref="'image_' + v.id + '_' + m.id" :data-sessionId="v.id" :data-messageId="m.id" @click="openImageEvent" class="image">
+                                                    </div>
+                                                    <!-- 名片 -->
+                                                    <div class="card" v-if="m.type == 'card'" :data-userId="m.user_for_card.id" @click.stop="switchAvatarEvent" >
+                                                        <div class="user">
+                                                            <div class="in">
+                                                                <div class="avatar">
+                                                                    <div class="in">
+                                                                        <div class="text" v-if="!isValid(m.user_for_card.avatar)">{{ m.user_for_card.nickname ? m.user_for_card.nickname[0].toUpperCase() : '' }}</div>
+                                                                        <div class="avatar" v-if="isValid(m.user_for_card.avatar)"><img :src="m.user_for_card.avatar" class="image"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="info">
+                                                                    <div class="name">{{ m.user_for_card.nickname }}</div>
+                                                                    <div class="id">ID: {{ m.user_for_card.id }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="title">
+                                                            <div class="left">个人名片</div>
+                                                            <div class="right">{{ m.format_time }}</div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 语音消息 -->
+                                                    <div class="voice" v-if="m.type == 'voice'" :class="m.is_read == 1 ? '' : 'unread'" :data-sessionId="v.id" :data-messageId="m.id" @click.stop="playAudioEvent">
+                                                        <div class="in">
+                                                            <div class="item sender" v-if="m.user_id == user.id">
+                                                                <div class="ico" :ref="'voice_ico_' + v.id + '_' + m.id">
+                                                                    <img src="file/icon_voice3.png" class="image">
+                                                                </div>
+                                                                <div class="time">{{ m.extra }}"</div>
+                                                            </div>
+                                                            <div class="item receiver" v-if="m.user_id != user.id">
+                                                                <div class="time">{{ m.extra }}"</div>
+                                                                <div class="ico" :ref="'voice_ico_' + v.id + '_' + m.id">
+                                                                    <img src="file/icon_voice3.png" class="image">
+                                                                </div>
+                                                            </div>
+                                                            <div class="meida hide">
+                                                                <audio :src="m.message" class="audio" :ref="'audio_' + v.id + '_' + m.id"></audio>
+                                                                <!--<audio src="file/new.mp3" class="audio" :ref="'audio_' + v.id + '_' + m.id"></audio>-->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 语音通话 -->
+                                                    <div class="voice_call" v-if="m.type == 'voice_call'">
+                                                        <div class="in">
+                                                            <div class="item sender" v-if="m.user_id == user.id">
+                                                                <div class="desc">
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您发送了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您收到了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id == user.id">对方已经拒绝</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id != user.id">已拒绝</template>
+                                                                    <template v-if="m.extra.status == 'accept'">通话时长 {{ m.extra.format_time }}</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id == user.id">已取消</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id != user.id">对方已取消</template>
+                                                                </div>
+                                                                <div class="ico"><img src="file/hang.png" class="image"></div>
+                                                            </div>
+                                                            <div class="item receiver" v-if="m.user_id != user.id">
+                                                                <div class="ico"><img src="file/hang.png" class="image"></div>
+                                                                <div class="desc">
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您发送了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'wait' && m.user_id == user.id">您收到了一条语音通话</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id == user.id">对方已经拒绝</template>
+                                                                    <template v-if="m.extra.status == 'refuse' && m.user_id != user.id">已拒绝</template>
+                                                                    <template v-if="m.extra.status == 'accept'">通话时长 {{ m.extra.format_time }}</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id == user.id">已取消</template>
+                                                                    <template v-if="m.extra.status == 'hang' && m.user_id != user.id">对方已取消</template>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 文件 -->
+                                                    <div class="file" v-if="m.type == 'file'">
+                                                        <div class="in">
+                                                            <div class="ico"><img src="file/file.png" class="image"></div>
+                                                            <div class="info">
+                                                                <div class="top name">{{ m.extra.name }}</div>
+                                                                <div class="btm size">
+                                                                    <span class="file-size">{{ m.extra.size }}</span>
+                                                                    |
+                                                                    <a :href="m.message" target="_blank" class="link">下载</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 加载状态 -->
+                                                    <div class="status" v-if="m.loading">
+                                                        <img src="file/loading.png" class="image loading-animation">
+                                                    </div>
+
+                                                    <!-- 或文件上传遮罩层 -->
+                                                    <div class="upload-mask" v-if="m.showUploadMask">
+                                                        <div class="in">{{ m.progress }}</div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="error" :class="m.blocked == 1 ? '' : 'hide'"><img src="file/fail.png" class="image">消息已经发送，但对方拒绝接受</div>
+                                            <div class="error" :class="isValid(m.error) ? '' : 'hide'"><img src="file/fail.png" class="image">{{ m.error }}</div>
+                                        </div>
+
+                                    </div>
+                                </template>
+                            </template>
+
+                            <template v-if="v.type == 'system'">
+                                <template v-for="v1 in historyForSystem[v.id].historyForGroup">
+                                    <!-- 消息分组 -->
+                                    <div class="group">
+                                        <div class="time">{{ v1.attr }}</div>
+
+                                        <!-- 消息行 -->
+                                        <div class="line msg other" v-for="m in v1.list"  :data-messageId="m.id">
+                                            <div class="avatar">
+                                                <div class="avatar"><img src="file/system.png" class="image"></div>
+                                            </div>
+                                            <div class="content">
+                                                <div class="in">
+                                                    <div class="text" v-html="m.content"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </template>
+                            </template>
+
+                        </div>
+                    </div>
+
+                    <!-- 输入 -->
+                    <div class="input-box" v-if="v.type != 'system'">
+                        <!-- 功能区域 -->
+                        <div class="functions">
+                            <div class="left">
+                                <div class="function" @click.stop="faceLayerEvent"><img src="file/face.png" class="image"></div>
+                                <div class="function" title="上传图片">
+                                    <img src="file/image_for_upload.png" class="image" :data-sessionId="v.id" data-fileType="image" @click.stop="fileUploadEvent">
+                                    <div class="hide">
+                                        <input type="file" accept="image/jpg,image/jpeg,image/png,image/gif" multiple="multiple" :ref="'image_for_upload_' + v.id">
+                                    </div>
+                                </div>
+                                <div class="function" title="上传文件">
+                                    <img src="file/file_for_upload.png" class="image"  :data-sessionId="v.id" data-fileType="file" @click.stop="fileUploadEvent">
+                                    <div class="hide">
+                                        <input type="file" multiple="multiple" :ref="'file_for_upload_' + v.id">
+                                    </div>
+                                </div>
+                                <div class="function" title="消息免打扰" :data-sessionId="v.id" @click.stop="setNoticeForHistory">
+                                    <img src="file/no_notice_open.png" class="image" v-if="v.can_notice < 1">
+                                    <img src="file/no_notice_close.png" class="image" v-if="v.can_notice >= 1">
+                                </div>
+                            </div>
+                            <div class="right">
+                                <div class="function" title="双向撤回" :data-sessionId="v.id" @click.stop="withdrawBoth"><img src="file/withdraw_both.png" class="image"></div>
+                            </div>
+                        </div>
+                        <!-- 输入框 -->
+                        <div class="input">
+                            <div class="text" contenteditable="true" :ref="'input_' + v.id" :data-sessionId="v.id" @keyup.enter="inputKeyUpEvent"></div>
+                        </div>
+                        <!-- 提交按钮 -->
+                        <div class="btn"><!--按下Ctrl+Enter换行--><button type="button" class="send" @click="sendBySessionId(v.id)">发送</button></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 相关信息 -->
+            <div class="tab-content information" v-show="val.tab == 'relation'">
+                <div class="title">
+                    <div class="in">详细信息</div>
+                </div>
+                <div class="content">
+                    <div class="item empty" v-show="val.detailForType == ''">
+                        <div class="in">
+                            <div class='thumb'><img src="file/stranger.png" class="image"></div>
+                        </div>
+                    </div>
+
+                    <!-- 用户 -->
+                    <div class="item info user" v-show="val.detailForType == 'friend'">
+                        <div class="avatar">
+                            <div class="in">
+                                <div class="text" v-if="!isValid(detailForFriend.friend.avatar)">{{ detailForFriend.alias ? detailForFriend.alias[0].toUpperCase() : '' }}</div>
+                                <div class="avatar" v-if="isValid(detailForFriend.friend.avatar)"><img :src="detailForFriend.friend.avatar" class="image"></div>
+                            </div>
+                        </div>
+                        <div class="name">
+                            <div class="in">
+                                <div class="text">{{ detailForFriend.alias }}</div>
+                                <div class="ico">
+                                    <img src="file/male.png" class="image" v-if="detailForFriend.friend.sex == 1">
+                                    <img src="file/female.png" class="image" v-if="detailForFriend.friend.sex == 2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="desc">{{ detailForFriend.description }}</div>
+                        <div class="remark">{{ detailForFriend.alias }}</div>
+                        <div class="btn">
+                            <button type="button" class="send" @click="switchSessionByTypeAndTargetId('private' , detailForFriend.friend_id)">发消息</button>
+                        </div>
+                    </div>
+
+                    <!-- 群组 -->
+                    <div class="item info group" v-show="val.detailForType == 'group'">
+
+                        <div class="avatar">
+                            <div class="group-avatar-box">
+
+                                <div class="item" v-for="(m,k) in detailForGroup.group.member_avatar">
+                                    <template v-if="k < 9">
+                                        <div class="text" v-if="!isValid(m.avatar)">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                        <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                    </template>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="name">
+                            <div class="in">
+                                <div class="text">{{ detailForGroup.group ? detailForGroup.group.name : '' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="desc">
+                            <div class="in">
+                                <div class="text">群名：{{ detailForGroup.group ? detailForGroup.group.name : '' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="btn">
+                            <button type="button" class="send" @click="switchSessionByTypeAndTargetId('group' , detailForGroup.group_id)">发消息</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 头像信息 -->
+    <transition name="fade-and-bounce">
+        <div class="user-info" ref="user-info" v-show="val.showUserInfo" @click.stop>
+            <div class="top avatar">
+                <div class="in">
+                    <div class="text" v-if="!isValid(userInfo.avatar)">{{ userInfo.nickname ? userInfo.nickname[0].toUpperCase() : '' }}</div>
+                    <div class="avatar" v-if="isValid(userInfo.avatar)"><img :src="userInfo.avatar" class="image"></div>
+                </div>
+            </div>
+            <div class="btm info">
+                <div class="in">
+                    <div class="line name">
+                        <div class="left">
+                            <template v-if="user.id == userInfo.id">{{ userInfo.nickname }}</template>
+                            <template v-if="user.id != userInfo.id">{{ userInfo.origin_nickname }}</template>
+                            <img src="file/male.png" class="image" v-if="userInfo.sex == 1">
+                            <img src="file/female.png" class="image" v-if="userInfo.sex == 2">
+                        </div>
+                        <div class="right" v-if="userInfo.id != user.id" @click="switchSessionInAvatar"><img src="file/message.png" class="image"></div>
+                    </div>
+                    <div class="line s-line signature" v-if="userInfo.id == user.id">
+                        <div class="left">签名：</div>
+                        <div class="right">{{ userInfo.signature }}</div>
+                    </div>
+
+                    <div class="line s-line remark" v-if="userInfo.id != user.id">
+                        <div class="left">备注：</div>
+                        <div class="right">{{ userInfo.nickname }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- 创建群聊 -->
+    <transition name="fade-and-bounce">
+        <div class="run-layer create-group" ref="layer-for-group" v-show="val.layerForGroup" @click.stop>
+        <!--<div class="run-layer create-group" ref="create-group" @click.stop>-->
+            <div class="top title">
+                <span>创建群组</span>
+                <div class="close" @click="hideLayerForGroup">
+                    <div class="positive"></div>
+                    <div class="negative"></div>
+                </div>
+            </div>
+            <div class="mid content">
+
+                <div class="name">
+                    <div class="in">
+                        <div class="left">群名称</div>
+                        <div class="right"><input type="text" class="input" v-model="formForGroup.name"></div>
+                    </div>
+                </div>
+
+                <div class="search">
+                    <div class="in">
+                        <div class="item user" v-for="v in selectedUserForLayer">
+                            <div class="text" v-if="!isValid(v.friend.avatar)">{{ v.alias ? v.alias[0].toUpperCase() : '' }}</div>
+                            <div class="avatar" v-if="isValid(v.friend.avatar)">
+                                <img :src="v.friend.avatar" class="image">
+                            </div>
+                            <div class="close"><img src="file/delete.png" class="image" @click="delFriendInLayer(v.friend_id)"></div>
+                        </div>
+
+                        <div class="item search-input">
+                            <div class="left"><img src="file/search.png" class="image"></div>
+                            <div class="right"><input type="text" placeholder="搜索" class="input" @input="searchForLayerEvent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="groups">
+
+                    <div class="group" v-for="v in searchForLayer">
+                        <div class="title">{{ v.group }}</div>
+                        <div class="list">
+
+                            <div class="item user" v-for="f in v.list" @click="selectedEventForLayer(f)">
+                                <div class="in">
+                                    <div class="left checkbox">
+                                        <div class="outer">
+                                            <img src="file/focus.png" class="image" v-if="f.selected">
+                                        </div>
+                                    </div>
+                                    <div class="right">
+                                        <div class="avatar">
+                                            <div class="text" v-if="!isValid(f.friend.avatar)">{{ f.alias ? f.alias[0].toUpperCase() : '' }}</div>
+                                            <div class="avatar" v-if="isValid(f.friend.avatar)">
+                                                <img :src="f.friend.avatar" class="image">
+                                            </div>
+                                        </div>
+                                        <div class="name">{{ f.alias }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--<div class="item user">-->
+                                <!--<div class="in">-->
+                                    <!--<div class="left checkbox">-->
+                                        <!--<div class="outer">-->
+                                            <!--<img src="file/focus.png" class="image hide">-->
+                                        <!--</div>-->
+                                    <!--</div>-->
+                                    <!--<div class="right">-->
+                                        <!--<div class="avatar">-->
+                                            <!--<div class="text hide">R</div>-->
+                                            <!--<div class="avatar">-->
+                                                <!--<img src="file/avatar.png" class="image">-->
+                                            <!--</div>-->
+                                        <!--</div>-->
+                                        <!--<div class="name">running</div>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="btm btn">
+                <button type="button" class="confirm" @click="createGroup">确定（{{ selectedUserForLayer.length }}）</button>
+            </div>
+
+        </div>
+    </transition>
+
+    <!-- 添加或者删除群成员 -->
+    <transition name="fade-and-bounce">
+        <!--<div class="run-layer create-group" ref="create-group" v-if="val.layerForGroup" @click.stop>-->
+        <div class="run-layer group-member-operation" ref="layer-for-group-member" @click.stop v-show="val.layerForGroupMember">
+            <div class="top title">
+                <span v-if="val.operationModeForGroup == 'add'">添加群成员</span>
+                <span v-if="val.operationModeForGroup == 'del'">删除群成员</span>
+                <div class="close" @click="hideLayerForGroupMember">
+                    <div class="positive"></div>
+                    <div class="negative"></div>
+                </div>
+            </div>
+            <div class="mid content">
+
+                <div class="name">
+                    <div class="in">
+                        <div class="left">群名称</div>
+                        <div class="right">{{ sessionForLayer.group ? sessionForLayer.group.name : '' }}</div>
+                    </div>
+                </div>
+
+                <div class="search">
+                    <div class="in">
+
+                        <div class="item user" v-for="v in selectedUserForLayer">
+                            <div class="text" v-if="!isValid(v.friend.avatar)">{{ v.alias ? v.alias[0].toUpperCase() : '' }}</div>
+                            <div class="avatar" v-if="isValid(v.friend.avatar)">
+                                <img :src="v.friend.avatar" class="image">
+                            </div>
+                            <div class="close"><img src="file/delete.png" class="image" @click="delFriendInLayer(v.friend_id)"></div>
+                        </div>
+
+                        <div class="item search-input">
+                            <div class="left"><img src="file/search.png" class="image"></div>
+                            <div class="right"><input type="text" placeholder="搜索" class="input" @input="searchForLayerEvent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="groups">
+
+                    <div class="group" v-for="v in searchForLayer">
+                        <div class="title">{{ v.group }}</div>
+                        <div class="list">
+
+                            <div class="item user" v-for="f in v.list" @click="selectedEventForLayer(f)">
+                                <div class="in">
+                                    <div class="left checkbox">
+                                        <div class="outer">
+                                            <img src="file/focus.png" class="image" v-if="f.selected">
+                                        </div>
+                                    </div>
+                                    <div class="right">
+                                        <div class="avatar">
+                                            <div class="text" v-if="!isValid(f.friend.avatar)">{{ f.alias ? f.alias[0].toUpperCase() : '' }}</div>
+                                            <div class="avatar" v-if="isValid(f.friend.avatar)">
+                                                <img :src="f.friend.avatar" class="image">
+                                            </div>
+                                        </div>
+                                        <div class="name">{{ f.alias }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="btm btn">
+                <button type="button" class="confirm" @click="groupMemberOperationEvent">确定（{{ selectedUserForLayer.length }}）</button>
+            </div>
+
+        </div>
+    </transition>
+
+    <!-- 表情包 -->
+    <transition name="fade-and-bounce">
+        <div class="face-layer" v-show="val.faceLayer" ref="face-layer" @click.stop>
+            <div class="in">
+                <div class="item" v-for="v in face"><img :src="'file/face/' + v.name + '.png'" :title="v.text" class="image" :data-name="v.name" :data-text="v.text" @click.stop="addFaceEvent"></div>
+                <!--<div class="item"><img src="file/face/Expression_2.png" class="image"></div>-->
+            </div>
+        </div>
+    </transition>
+
+    <!-- 会话右键功能 -->
+    <transition name="fade-and-bounce">
+        <div class="layer-for-right-key right-key-layer-for-session" v-if="val.layerForRightKeyInSession" ref="layer-for-right-key-in-session" @mousedown.stop>
+            <div class="in">
+                <div class="line" @click="setTop">
+                    <template v-if="sessionForRightKeyLayer.top >= 1">取消置顶</template>
+                    <template v-if="sessionForRightKeyLayer.top < 1">置顶</template>
+                </div>
+                <div class="line" @click="setNotice">
+                    <template v-if="sessionForRightKeyLayer.can_notice >= 1">消息免打扰</template>
+                    <template v-if="sessionForRightKeyLayer.can_notice < 1">开启新消息提醒</template>
+                </div>
+                <div class="line" @click="delSession">删除会话</div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- 消息右键功能 -->
+    <transition name="fade-and-bounce">
+        <div class="layer-for-right-key right-key-layer-for-message" v-if="val.layerForRightKeyInMessage" ref="layer-for-right-key-in-message" @mousedown.stop>
+            <div class="in">
+                <div class="line" v-if="['text'].indexOf(messageForRightKeyLayer.type) >= 0" @click="copyMessage">复制</div>
+                <div class="line" @click="withdrawMessage">撤回</div>
+                <div class="line" @click="forwardMessage">转发</div>
+                <div class="line" @click="delMessage">删除</div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- 转发消息-->
+    <transition name="fade-and-bounce">
+        <div class="run-layer layer-for-forward" ref="layer-for-forward" @click.stop v-show="val.layerForForward">
+            <div class="top title">
+                <span>消息转发</span>
+                <div class="close" @click="hideLayerForForward">
+                    <div class="positive"></div>
+                    <div class="negative"></div>
+                </div>
+            </div>
+            <div class="mid content">
+
+                <div class="search">
+                    <div class="in">
+
+                        <template v-for="v in selectedForForwardLayer">
+
+                            <div class="item user hide" v-if="v.type == 'private'">
+                                <div class="text" v-if="!isValid(v.friend.avatar)">{{ v.friend ? (v.friend.nickname ? v.friend.nickname[0].toUpperCase() : '') : '' }}</div>
+                                <div class="avatar" v-if=isValid(v.friend.avatar)>
+                                    <img :src="v.friend.avatar" class="image">
+                                </div>
+                                <div class="close" @click="delSelectedForForwardLayer('private' , v.friend.id)"><img src="file/delete.png" class="image"></div>
+                            </div>
+
+                            <div class="item group hide" v-if="v.type == 'group'">
+                                <div class="avatar group-avatar-box">
+
+                                    <div class="item" v-for="(m,k) in v.group.member_avatar">
+                                        <template v-if="k < val.groupAvatarLimit">
+                                            <div class="text" v-if="!isValid(m.avatar)">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                            <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="close" @click="delSelectedForForwardLayer('group' , v.group.id)"><img src="file/delete.png" class="image"></div>
+                            </div>
+                        </template>
+
+                        <div class="item search-input">
+                            <div class="left"><img src="file/search.png" class="image"></div>
+                            <div class="right"><input type="text" placeholder="搜索" class="input" @input="searchEventForForwardLayer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="groups">
+
+                    <!-- 最近聊天 -->
+                    <div class="group-item recent">
+                        <div class="title">最近聊天</div>
+                        <div class="group">
+                            <div class="list">
+                                <template v-for="v in searchForForwardLayer.recent">
+                                    <div class="item user" v-if="v.type == 'private'" @click="selectedEventForForwardLayer('session' , v)">
+                                        <div class="in">
+
+                                            <div class="left checkbox hide">
+                                                <div class="outer">
+                                                    <img src="file/focus.png" class="image" v-if="v.friend.selected">
+                                                </div>
+                                            </div>
+
+                                            <div class="right">
+                                                <div class="avatar">
+                                                    <div class="text" v-if="!isValid(v.friend.avatar)">{{ v.friend ? (v.friend.nickname ? v.friend.nickname[0].toUpperCase() : '') : '' }}</div>
+                                                    <div class="avatar" v-if=isValid(v.friend.avatar)>
+                                                        <img :src="v.friend.avatar" class="image">
+                                                    </div>
+                                                </div>
+                                                <div class="name">{{ v.friend ? v.friend.alias : '' }}</div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="item group" v-if="v.type == 'group'" @click="selectedEventForForwardLayer('session' , v)">
+                                        <div class="in">
+
+                                            <div class="left checkbox hide">
+                                                <div class="outer">
+                                                    <img src="file/focus.png" class="image" v-if="v.group.selected">
+                                                </div>
+                                            </div>
+
+                                            <div class="right">
+                                                <div class="avatar group-avatar-box">
+                                                    <div class="item" v-for="(m,k) in v.group.member_avatar">
+                                                        <template v-if="k < val.groupAvatarLimit">
+                                                            <div class="text" v-if="!isValid(m.avatar)">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                                            <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="name">{{ v.group ? v.group.name : '' }}</div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 转发的群组 -->
+                    <div class="group-item my-group">
+
+                        <div class="title">群组</div>
+                        <div class="group">
+                            <div class="list">
+
+                                <div class="item group" v-for="v in searchForForwardLayer.group" @click="selectedEventForForwardLayer('group' , v)" :data-id="v.id" :data-groupId="v.group.id">
+                                    <div class="in">
+
+                                        <div class="left checkbox hide">
+                                            <div class="outer">
+                                                <img src="file/focus.png" class="image" v-if="v.selected">
+                                            </div>
+                                        </div>
+
+                                        <div class="right">
+                                            <div class="avatar group-avatar-box">
+                                                <div class="item" v-for="(m,k) in v.group.member_avatar">
+                                                    <template v-if="k < val.groupAvatarLimit">
+                                                        <div class="text" v-if="!isValid(m.avatar)">{{ m.nickname ? m.nickname[0].toUpperCase() : '' }}</div>
+                                                        <div class="avatar" v-if="isValid(m.avatar)"><img :src="m.avatar" class="image"></div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="name">{{ v.group ? v.group.name : '' }}</div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="group-item my-friend" v-for="v in searchForForwardLayer.friend">
+
+                        <div class="title">{{ v.group }}</div>
+                        <div class="group">
+                            <div class="list">
+
+                                <div class="item user" v-for="f in v.list" @click="selectedEventForForwardLayer('private' , f)">
+                                    <div class="in">
+
+                                        <div class="left checkbox hide">
+                                            <div class="outer">
+                                                <img src="file/focus.png" class="image" v-if="f.selected">
+                                            </div>
+                                        </div>
+
+                                        <div class="right">
+                                            <div class="avatar">
+                                                <div class="text" v-if="!isValid(f.friend.avatar)">{{ f.alias ? f.alias[0].toUpperCase() : '' }}</div>
+                                                <div class="avatar" v-if=isValid(f.friend.avatar)>
+                                                    <img :src="f.friend.avatar" class="image">
+                                                </div>
+                                            </div>
+                                            <div class="name">{{ f.alias }}</div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="btm btn hide">
+                <button type="button" class="confirm" >确定（{{ selectedForForwardLayer.length }}）</button>
+            </div>
+
+        </div>
+    </transition>
+</div>
+
+<!-- 第三方依赖 -->
+<script src="lib/jquery.js"></script>
+<script src="lib/crypto-js.js"></script>
+<script src="lib/vue.js"></script>
+<script src="lib/PinYin.js"></script>
+<script src="lib/layer/layer.js"></script>
+<script src="lib/BenzAMRRecorder.min.js"></script>
+<!--<script src="lib/clipboard.min.js"></script>-->
+
+<!-- 个人依赖 -->
+<script src="plugin/SmallJs/SmallJs.js?version=30.0"></script>
+<script src="lib/RTC.js?version=30.0"></script>
+
+<!-- 资源依赖 -->
+<script src="lib/face.js"></script>
+
+<!-- 系统依赖 -->
+<script src="js/mixin.js?version=30.0"></script>
+<script src="js/Aes.js?version=30.0"></script>
+<script src="js/common.js?version=30.0"></script>
+<script src="js/global.js?version=30.0"></script>
+<script src="js/index.js?version=30.0"></script>
+</body>
+</html>
