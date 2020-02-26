@@ -5,9 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html">
     <link rel="icon" href="file/logo.png">
     <title>OJBK-嗨聊</title>
-    <link rel="stylesheet" href="plugin/Run/base.css?version=30.0">
-    <link rel="stylesheet" href="css/public.css?version=30.0">
-    <link rel="stylesheet" href="css/index.css?version=30.0">
+    <link rel="stylesheet" href="plugin/Run/base.css?version=32.0">
+    <link rel="stylesheet" href="css/public.css?version=32.0">
+    <link rel="stylesheet" href="css/index.css?version=32.0">
 </head>
 <body>
 <div class="loading" id="loading">
@@ -683,7 +683,20 @@
                         </div>
                         <!-- 输入框 -->
                         <div class="input">
-                            <div class="text" contenteditable="true" :ref="'input_' + v.id" :data-sessionId="v.id" @keyup.enter="inputKeyUpEvent"></div>
+                            <div class="text" contenteditable="true" :ref="'input_' + v.id" :data-sessionId="v.id" @keyup.enter="inputKeyUpEvent" @paste="pasteEvent" @dragover="dragOverEvent" @drop="dropEvent">
+                                <!-- 截图 -->
+                                <!--<img src="file/demo.png" class="image screenshot" @click="imageClickEventForInput">-->
+                                <!--&lt;!&ndash; 文件 &ndash;&gt;-->
+                                <!--<div class="file" contenteditable="false">-->
+                                    <!--<div class="in">-->
+                                        <!--<div class="ico"><img src="file/file.png" class="image"></div>-->
+                                        <!--<div class="info">-->
+                                            <!--<div class="top name">文件名称.txt</div>-->
+                                            <!--<div class="btm size">200KB</div>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            </div>
                         </div>
                         <!-- 提交按钮 -->
                         <div class="btn"><!--按下Ctrl+Enter换行--><button type="button" class="send" @click="sendBySessionId(v.id)">发送</button></div>
@@ -1203,17 +1216,17 @@
 <!--<script src="lib/clipboard.min.js"></script>-->
 
 <!-- 个人依赖 -->
-<script src="plugin/SmallJs/SmallJs.js?version=30.0"></script>
-<script src="lib/RTC.js?version=30.0"></script>
+<script src="plugin/SmallJs/SmallJs.js?version=32.0"></script>
+<script src="lib/RTC.js?version=32.0"></script>
 
 <!-- 资源依赖 -->
 <script src="lib/face.js"></script>
 
 <!-- 系统依赖 -->
-<script src="js/mixin.js?version=30.0"></script>
-<script src="js/Aes.js?version=30.0"></script>
-<script src="js/common.js?version=30.0"></script>
-<script src="js/global.js?version=30.0"></script>
-<script src="js/index.js?version=30.0"></script>
+<script src="js/mixin.js?version=32.0"></script>
+<script src="js/Aes.js?version=32.0"></script>
+<script src="js/common.js?version=32.0"></script>
+<script src="js/global.js?version=32.0"></script>
+<script src="js/index.js?version=32.0"></script>
 </body>
 </html>

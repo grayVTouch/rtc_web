@@ -65,7 +65,7 @@
                 // 生成二维码
                 // this.ins.rtc.loginQRCodeForTest(null , (res) => {
                 this.ins.rtc.loginQRCode(null , (res) => {
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log('ws 接口获取到了错误信息：' . res.data);
                         return ;
                     }

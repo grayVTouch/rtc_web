@@ -155,7 +155,7 @@ const Pub = {
     } ,
 
     // 文件上传
-    fileUpload (formData , successEvent , errorEvent , progressEvent , load) {
+    fileUpload (formData , successEvent , errorEvent , progressEvent , loadEvent) {
         return G.ajax({
             url: topContext.urlForUpload ,
             method: 'post' ,
@@ -168,7 +168,7 @@ const Pub = {
             // 上传事件
             uProgress: progressEvent ,
             // 上传完成后
-            uLoad: load ,
+            uLoad: loadEvent ,
         });
     } ,
 
@@ -197,14 +197,42 @@ const Pub = {
     // 过滤掉 html 中的 div 和 br 换行符
     stripTags (html) {
         // 过滤掉成对的标签
-        const regForDouble = /<(.+?)>(.*)<\/\1>/g;
-        const regForSingle = /<(.+?)>/g;
+        const regForDouble = /<(?!a)(.+?)\s*.*?>(.*?)<\/\1>/g;
+        // const regForSingle = /<(.+?)>/g;
+        const regForSingleExcludeImg = /<(?!img).*?>/g;
+        const regForStyle = /style=(").*?\1/g;
         const regForSpace = /&nbsp;/g;
         let res = html.replace(regForDouble , '$2');
-            res = res.replace(regForSingle , '');
+            res = res.replace(regForSingleExcludeImg , '');
+            res = res.replace(regForStyle , ' ');
             res = res.replace(regForSpace , ' ');
         return res;
     } ,
 
+    // 过滤掉图片 和 截图
+    stripImageAndFile (html) {
+        const regForImage = '';
+    } ,
+
+    stripFromClipboard (html) {
+        const reg = /<\!--StartFragment-->(.*?)<\!--EndFragment-->/;
+        const matches = html.match(reg);
+        if (G.isNull(matches)) {
+            return html;
+        }
+        if (matches.length != 2) {
+            return html;
+        }
+        const regForDouble = /<(.+?)>(.*)<\/\1>/g;
+        const regForExcludeImg = /<(?!img).*?>/g;
+        const regForStyle = /style=(").*?\1/g;
+        const regForSpace = /&nbsp;/g;
+        html = matches[1];
+        let res = html.replace(regForDouble , '$2');
+            res = res.replace(regForExcludeImg , '');
+            res = res.replace(regForSpace , '');
+            res = res.replace(regForStyle , '');
+        return res;
+    } ,
 
 };

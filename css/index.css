@@ -1853,6 +1853,73 @@
     overflow-y: auto;
 }
 
+/*** 截屏的图片 ***/
+.histories .history .input-box .input .text .screenshot {
+    max-width: 120px;
+    vertical-align: bottom;
+    border: 1px solid transparent;
+}
+
+.histories .history .input-box .input .text .screenshot.focus {
+    border: 1px solid #3d7dff;
+    cursor: move;
+}
+
+/*** 文件拖拽 ***/
+/*.histories .history .input-box .input .text */
+
+
+.histories .history .input-box .input .text .file {
+    padding: 10px 60px 10px 10px;
+    position: relative;
+    display: inline-block;
+    border: 1px solid #ccc;
+    vertical-align: bottom;
+}
+
+.histories .history .input-box .input .text .file > .in {
+    position: relative;
+}
+
+.histories .history .input-box .input .text .file > .in .ico {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+}
+
+.histories .history .input-box .input .text .file > .in .ico .image {
+    width: 40px;
+    height: 40px;
+}
+
+.histories .history .input-box .input .text .file > .in .info {
+    margin-left: 40px;
+    text-align: left;
+    font-size: 13px;
+}
+
+.histories .history .input-box .input .text .file > .in .info > * {
+    height: 20px;
+    line-height: 20px;
+}
+
+.histories .history .input-box .input .text .file > .in .info .name {
+
+}
+
+
+.histories .history .input-box .input .text .file > .in .info .file-size {
+    color: #333;
+}
+
+.histories .history .input-box .input .text .file > .in .info .link {
+    color: #35ac2f;
+}
+
+
+
 .histories .history .input-box .input .text .face {
     width: 24px;
     height: 24px;

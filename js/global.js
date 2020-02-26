@@ -1,7 +1,7 @@
 const topContext = {
     // websocket 地址
     // websocket: 'ws://websocket.hichatvip.com:10010' ,
-    websocket: 'ws://websocket.hichatvip.com:10001' ,
+    websocket: 'ws://socket.hichatvip.com:10001' ,
     // websocket: 'ws://47.88.223.82:10010' ,
     // websocket: 'ws://47.88.223.82:10001' ,
     // 项目标识符
@@ -17,7 +17,7 @@ const topContext = {
     // 群成员批量显示
     groupMemberLimit: 45 ,
     // 错误码
-    successCode: 200 ,
+    successCode: 0 ,
     // 用户认证失败的错误码
     userAuthFailCode: 1000 ,
     // 图片上传接口

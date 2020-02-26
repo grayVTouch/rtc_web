@@ -317,7 +317,7 @@
                 const self = this;
                 // 获取登录用户的信息
                 this.send('self' , null , (res) => {
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         return ;
                     }
@@ -638,7 +638,7 @@
                 isAddQueue = G.isBoolean(isAddQueue) ? isAddQueue : true;
                 // 获取会话列表
                 this.send('session' , null , (res) => {
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         return ;
                     }
@@ -792,7 +792,7 @@
             myGroup (isAddQueue) {
                 isAddQueue = G.isBoolean(isAddQueue) ? isAddQueue : true;
                 this.send('myGroup' , null , (res) => {
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         return ;
                     }
@@ -822,7 +822,7 @@
             myFriend (isAddQueue) {
                 isAddQueue = G.isBoolean(isAddQueue) ? isAddQueue : true;
                 this.send('myFriend' , null , (res) => {
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         return ;
                     }
                     res = res.data;
@@ -895,6 +895,13 @@
                 win.on('click' , this.hideFaceLayer.bind(this));
                 win.on('mousedown' , this.hideLayerForRightKeyInSession.bind(this));
                 win.on('mousedown' , this.hideLayerForRightKeyInMessage.bind(this));
+                win.on('click' , () => {
+                    const images = G('.screenshot');
+                    images.each((dom) => {
+                        dom = G(dom);
+                        dom.removeClass('focus');
+                    });
+                });
 
                 document.oncontextmenu = () => { return false; };
 
@@ -1481,7 +1488,7 @@
                     this.pending.oldHistoryForPrivate = false;
                     history.loading = false;
                     // 私聊-历史记录
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         this.pending.renderForOldHistoryForPrivate = false;
                         return ;
@@ -1551,7 +1558,7 @@
                     this.pending.oldHistoryForGroup = false;
                     history.loading = false;
                     // 私聊-历史记录
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         this.pending.renderForOldHistoryForGroup = false;
                         return ;
@@ -1622,7 +1629,7 @@
                     this.pending.oldHistoryForSystem = false;
                     history.loading = false;
                     // 私聊-历史记录
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         this.pending.renderForOldHistoryForSystem = false;
                         return ;
@@ -1775,7 +1782,7 @@
                     } ,  (res) => {
                         this.pending.withdrawBothForPrivateBySessionId = false;
                         layer.close(layerIndex);
-                        if (res.code != 200) {
+                        if (res.code != topContext.successCode) {
                             layer.alert(res.data);
                             return ;
                         }
@@ -1805,7 +1812,7 @@
                     } ,  (res) => {
                         this.pending.withdrawBothForGroupBySessionId = false;
                         layer.close(layerIndex);
-                        if (res.code != 200) {
+                        if (res.code != topContext.successCode) {
                             // console.log('不支持的消息' , res.data);
                             layer.alert(res.data);
                             return ;
@@ -2426,113 +2433,119 @@
                     fileDom.on('change' , (res) => {
                         const file = fileDom.get(0);
                         const files = file.files;
-                        if (files.length < 1) {
-                            // 没有选择文件，不要理会
-                            return ;
-                        }
-                        for (let i = 0; i < files.length; ++i)
-                        {
-                            const curFile = files[i];
-                            const formData = new FormData();
-                            formData.append('file' , curFile);
-
-                            switch (fileType)
-                            {
-                                case 'image':
-                                    // 图片文件
-                                    G.getBlobUrl(curFile , (res) => {
-                                        G.getImage(res , (info) => {
-                                            const messageId = this.sendTempImageBySessionIdAndImageAndInfo(sessionId , info.url , {
-                                                width: info.width ,
-                                                height: info.height ,
-                                            });
-                                            // 文件上传到亚马逊云存储
-                                            Pub.fileUpload(formData , (res) => {
-                                                if (res.code != 0) {
-                                                    this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
-                                                        error: res.data ,
-                                                    });
-                                                    return ;
-                                                }
-                                                res = res.data;
-                                                this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
-                                                    file: res
-                                                });
-                                                switch (session.type)
-                                                {
-                                                    case 'private':
-                                                        this.sendImageForPrivateBySessionIdAndMessageId(sessionId , messageId);
-                                                        break;
-                                                    case 'group':
-                                                        this.sendImageForGroupBySessionIdAndMessageId(sessionId , messageId);
-                                                        break;
-                                                    default:
-                                                        throw new Error('不支持的文件类型');
-                                                }
-                                            } , null , (e) => {
-                                                if (!e.lengthComputable) {
-                                                    return ;
-                                                }
-                                                let percent = e.loaded / e.total;
-                                                percent *= 100;
-                                                percent = percent.toFixed(0);
-
-                                                this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
-                                                    progress: percent + '%' ,
-                                                });
-                                            } , (res) => {
-                                                // console.log('文件上传完成' , res);
-                                            });
-                                        });
-                                    });
-                                    break;
-                                case 'file':
-                                    G.getBlobUrl(curFile , (res) => {
-                                        // 普通文件
-                                        const messageId = this.sendTempFileBySessionIdAndFileAndInfo(sessionId , res , {
-                                            name: curFile.name ,
-                                            size: curFile.size
-                                        });
-                                        // 文件上传到亚马逊云存储
-                                        Pub.fileUpload(formData , (res) => {
-                                            if (res.code != 0) {
-                                                this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
-                                                    error: res.data ,
-                                                });
-                                                return ;
-                                            }
-                                            res = res.data;
-                                            this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
-                                                file: res
-                                            });
-                                            switch (session.type)
-                                            {
-                                                case 'private':
-                                                    this.sendFileForPrivateBySessionIdAndMessageId(sessionId , messageId);
-                                                    break;
-                                                case 'group':
-                                                    this.sendFileForGroupBySessionIdAndMessageId(sessionId , messageId);
-                                                    break;
-                                                default:
-                                                    throw new Error('不支持的文件类型');
-                                            }
-                                        } , null , (e) => {
-                                            let percent = e.loaded / e.total;
-                                            percent *= 100;
-                                            percent = percent.toFixed(2);
-                                            this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
-                                                progress: percent + '%' ,
-                                            });
-                                        } , (res) => {
-                                            // console.log('文件上传完成' , res);
-                                        });
-                                    });
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
+                        this.fileUploadBySessionIdAndTypeAndFiles(sessionId , fileType , files);
                     });
+                }
+            } ,
+
+            // 支持的 fileType 有 image | file
+            fileUploadBySessionIdAndTypeAndFiles (sessionId , fileType , files) {
+                const session = this.findSessionById(sessionId);
+                if (files.length < 1) {
+                    // 没有选择文件，不要理会
+                    return ;
+                }
+                for (let i = 0; i < files.length; ++i)
+                {
+                    const curFile = files[i];
+                    const formData = new FormData();
+                    formData.append('file' , curFile);
+
+                    switch (fileType)
+                    {
+                        case 'image':
+                            // 图片文件
+                            G.getBlobUrl(curFile , (res) => {
+                                G.getImage(res , (info) => {
+                                    const messageId = this.sendTempImageBySessionIdAndImageAndInfo(sessionId , info.url , {
+                                        width: info.width ,
+                                        height: info.height ,
+                                    });
+                                    // 文件上传到亚马逊云存储
+                                    Pub.fileUpload(formData , (res) => {
+                                        if (res.code != 0) {
+                                            this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
+                                                error: res.data ,
+                                            });
+                                            return ;
+                                        }
+                                        res = res.data;
+                                        this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
+                                            file: res
+                                        });
+                                        switch (session.type)
+                                        {
+                                            case 'private':
+                                                this.sendImageForPrivateBySessionIdAndMessageId(sessionId , messageId);
+                                                break;
+                                            case 'group':
+                                                this.sendImageForGroupBySessionIdAndMessageId(sessionId , messageId);
+                                                break;
+                                            default:
+                                                throw new Error('不支持的文件类型');
+                                        }
+                                    } , null , (e) => {
+                                        if (!e.lengthComputable) {
+                                            return ;
+                                        }
+                                        let percent = e.loaded / e.total;
+                                        percent *= 100;
+                                        percent = percent.toFixed(0);
+
+                                        this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
+                                            progress: percent + '%' ,
+                                        });
+                                    } , (res) => {
+                                        // console.log('文件上传完成' , res);
+                                    });
+                                });
+                            });
+                            break;
+                        case 'file':
+                            G.getBlobUrl(curFile , (res) => {
+                                // 普通文件
+                                const messageId = this.sendTempFileBySessionIdAndFileAndInfo(sessionId , res , {
+                                    name: curFile.name ,
+                                    size: curFile.size
+                                });
+                                // 文件上传到亚马逊云存储
+                                Pub.fileUpload(formData , (res) => {
+                                    if (res.code != 0) {
+                                        this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
+                                            error: res.data ,
+                                        });
+                                        return ;
+                                    }
+                                    res = res.data;
+                                    this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
+                                        file: res
+                                    });
+                                    switch (session.type)
+                                    {
+                                        case 'private':
+                                            this.sendFileForPrivateBySessionIdAndMessageId(sessionId , messageId);
+                                            break;
+                                        case 'group':
+                                            this.sendFileForGroupBySessionIdAndMessageId(sessionId , messageId);
+                                            break;
+                                        default:
+                                            throw new Error('不支持的文件类型');
+                                    }
+                                } , null , (e) => {
+                                    let percent = e.loaded / e.total;
+                                    percent *= 100;
+                                    percent = percent.toFixed(0);
+                                    this.updateMessageInMessageGroupBySessionIdAndMessageIdAndMesasge(sessionId , messageId , {
+                                        progress: percent + '%' ,
+                                    });
+                                } , (res) => {
+                                    // console.log('文件上传完成' , res);
+                                });
+                            });
+                            break;
+                        default:
+                            break;
+                    }
                 }
             } ,
 
@@ -2896,6 +2909,7 @@
 
             // 创建 session
             createOrUpdateSession (type , targetId , callback) {
+                // console.log('创建或更新 会话' , this.pending.createOrUpdateSession);
                 if (this.pending.createOrUpdateSession) {
                     console.log('createOrUpdateSession 请求中...请耐心等待');
                     return ;
@@ -2930,7 +2944,9 @@
                 }
                 let session = this.findSessionByTypeAndTargetId(type , targetId);
                 if (session === false) {
+                    // console.log('创建会话');
                     return this.createOrUpdateSession(type , targetId , () => {
+                        // console.log('创建会话成功');
                         this.getSession(() => {
                             session = this.findSessionByTypeAndTargetId(type , targetId);
                             this.switchSessionById(session.id , true);
@@ -3644,7 +3660,7 @@
                 this.send('createGroup' , this.formForGroup , (res) => {
                     this.pending.createGroup = false;
                     layer.close(layerIndex);
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         layer.alert(res.data);
                         return ;
                     }
@@ -3731,7 +3747,7 @@
                 } , (res) => {
                     layer.close(layerIndex);
                     this.pending.addGroupMember = false;
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         layer.alert(res.data);
                         return ;
                     }
@@ -3765,7 +3781,7 @@
                 } , (res) => {
                     layer.close(layerIndex);
                     this.pending.delGroupMember = false;
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         layer.alert(res.data);
                         return ;
                     }
@@ -3867,7 +3883,7 @@
                 const session = this.findSessionById(sessionId);
                 // 设置语音消息为已读
                 const callback = (res) => {
-                    if (res.code != 200) {
+                    if (res.code != topContext.successCode) {
                         console.log(res.data);
                         return ;
                     }
@@ -4238,6 +4254,78 @@
 
             hideLayerForForward () {
                 this.val.layerForForward = false;
+            } ,
+
+            imageClickEventForInput (e) {
+                G.stop(e);
+                const tar = G(e.currentTarget);
+                tar.addClass('focus');
+            } ,
+
+            pasteEvent (e) {
+                const tar = G(e.currentTarget);
+                const sessionId = tar.data('sessionId');
+                const inputDom = G(this.$refs['input_' + sessionId]);
+                const dataTransfer = e.clipboardData;
+                const items = dataTransfer.items;
+                let i = items.length - 1;
+                while (i >= 0)
+                {
+                    const item = items[i];
+                    if (item.kind == 'string') {
+                        // console.log('字符串');
+                        // const html = inputDom.html();
+                        // if (html.length > 0) {
+                        //     return ;
+                        // }
+                        // e.preventDefault();
+                        // // 粘贴的内容是字符串
+                        // item.getAsString((val) => {
+                        //     // 过滤掉 html 标签（除 img 等表情标签）
+                        //     val = Pub.stripFromClipboard(val);
+                        //     inputDom.html(inputDom.html() + val);
+                        // });
+                    } else if (item.kind == 'file') {
+                        // 粘贴的内容是文件
+                        e.preventDefault();
+                        // console.log(item.kind , item.type);
+                        const file = item.getAsFile();
+                        this.fileUploadBySessionIdAndTypeAndFiles(sessionId , 'image' , [file]);
+                    } else {
+                        // 其他待扩充的类型
+                    }
+                    i--;
+                    break;
+                }
+            } ,
+
+            dragOverEvent (e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            } ,
+
+            dropEvent (e) {
+                const tar = G(e.currentTarget);
+                const sessionId = tar.data('sessionId');
+                const dataTransfer = e.dataTransfer;
+                const items = dataTransfer.items;
+                let i = items.length - 1;
+                while (i >= 0)
+                {
+                    const item = items[i];
+                    if (item.kind == 'string') {
+                        return ;
+                    } else if (item.kind == 'file') {
+                        // 粘贴的内容是文件
+                        e.preventDefault();
+                        // console.log(item.kind , item.type);
+                        const file = item.getAsFile();
+                        this.fileUploadBySessionIdAndTypeAndFiles(sessionId , 'file' , [file]);
+                    } else {
+                        // 其他待扩充的类型
+                    }
+                    return ;
+                }
             } ,
 
             run () {

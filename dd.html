@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件拖拽demo</title>
+</head>
+<body>
+<style>
+    div {
+        margin-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    #dragable {
+        border: 1px solid red;
+        width: 300px;
+        height: 300px;
+    }
+
+    #dropable {
+        border: 1px solid green;
+        width: 100px;
+        height: 100px;
+    }
+</style>
+
+<div id="dragable" draggable="true">
+    <p id="text">hello boys and girls</p>
+    <img src="file/relation_focus.png" class="image" id="image">
+</div>
+
+<!-- 文件拖拽容器 -->
+<div id="dropable" contenteditable="true"></div>
+
+<script>
+    "use strict";
+
+    const one = document.getElementById('dragable');
+    const two = document.getElementById('dropable');
+
+    one.ondragstart = function(e){
+        // console.log('dragstart event');
+        e.dataTransfer.setData('text/html' , e.currentTarget.outerHTML);
+        console.log(e.currentTarget.outerHTML);
+        // e.dataTransfer.dropEffect = 'copy';
+    };
+
+    one.ondrag = (e) => {
+        const dt = e.dataTransfer;
+        // dt.dropEffect = 'move';
+        console.log('元素拖动中...');
+    };
+
+    two.ondrop = function(e){
+        const df = e.dataTransfer;
+        const html = df.getData('text/html');
+        console.log('获取到的 html 数据' , html);
+        two.innerHTML += html;
+    };
+
+    // 经过拖放元素的时候触发
+    two.ondragover = function(e){
+        // 必须要阻止默认事件发生
+        e.preventDefault();
+        const df = e.dataTransfer;
+        df.dropEffect = 'link';
+        console.log('dragover doing');
+    };
+
+    // 剪贴板事件
+    two.onpaste = (e) => {
+        console.log(e.clipboardData);
+        const df = e.clipboardData;
+        console.log('剪贴板中的数据长度：' , JSON.parse(JSON.stringify(df.items.length)));
+        for (let i = 0; i < df.items.length; ++i)
+        {
+            const item = df.items[i];
+            if (item.kind == 'string') {
+                // 粘贴的内容是字符串
+
+            } else if (item.kind == 'file') {
+                // 粘贴的内容是文件
+
+            } else {
+                // 其他待扩充的类型
+            }
+        }
+    };
+
+
+</script>
+</body>
+</html>
