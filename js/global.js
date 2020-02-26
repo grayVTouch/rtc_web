@@ -1,7 +1,7 @@
 const topContext = {
     // websocket 地址
-    // websocket: 'ws://websocket.hichatvip.com:10001' ,
-    websocket: 'ws://socket.hichatvip.com:10001' ,
+    websocket: 'ws://websocket.hichatvip.com:10001' ,
+    // websocket: 'ws://socket.hichatvip.com:10001' ,
     // websocket: 'ws://47.88.223.82:10010' ,
     // websocket: 'ws://47.88.223.82:10001' ,
     // 项目标识符
