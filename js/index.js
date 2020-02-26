@@ -74,6 +74,7 @@
             } ,
 
             maxWidthForImageInMessage: 100 ,
+            maxWidthForVideoInMessage: 150 ,
 
             imageLoadedKey: {} ,
 
@@ -380,6 +381,7 @@
                 if (session === false) {
                     return ;
                 }
+                console.log('接收到群消息同步指令！双向撤回');
                 this.syncHistoryBySessionId(session.id , true);
             } ,
 
@@ -536,7 +538,6 @@
 
             // 新消息
             newForListen () {
-                window.setTimeout(this.val.timerForNew);
                 let count = 1;
                 const alert = () => {
                     if (this.val.windowFocus) {
@@ -1216,7 +1217,10 @@
                         return ;
                     }
                     res = res.data;
+                    const idListReceive = [];
                     res.forEach((msg) => {
+                        idListReceive.push(msg.id);
+
                         switch (session.type)
                         {
                             case 'private':
@@ -1230,6 +1234,7 @@
                                 break;
                         }
                     });
+                    console.log('同步请求接收到的idList: ' + G.jsonEncode(idListReceive));
                     const find = (messageId) => {
                         for (let i = 0; i < res.length; ++i)
                         {
@@ -1240,10 +1245,23 @@
                         }
                         return false;
                     };
+                    const isOrigin = (id) => {
+                        for (let i = 0; i < idList.length; ++i)
+                        {
+                            const curId = idList[i];
+                            if (id == curId) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    };
                     // 同步 history
                     for (let i = 0; i < history.history.length; ++i)
                     {
                         const message = history.history[i];
+                        if (!isOrigin(message.id)) {
+                            continue ;
+                        }
                         const findRes = find(message.id);
                         if (findRes === false) {
                             history.history.splice(i , 1);
@@ -1258,6 +1276,9 @@
                         for (let n = 0; n < group.list.length; ++n)
                         {
                             let message = group.list[n];
+                            if (!isOrigin(message.id)) {
+                                continue ;
+                            }
                             if (!clearAll && message.isTemp) {
                                 // 不是清除所有数据的时候
                                 // 跳过临时数据
@@ -1286,6 +1307,7 @@
                     });
 
                 };
+                console.log('同步请求发送的idList: ' + G.jsonEncode(idList));
                 switch (session.type)
                 {
                     case 'private':
@@ -1345,6 +1367,7 @@
                         const prevSiblings = curSessionDom.prevSiblings();
                         const sessionH = curSessionDom.getTH();
                         let sumH = sessionH * prevSiblings.length;
+                        // 切换动画不需要过渡动画
                         sessionDom.vScroll(300 , sumH);
                     });
                 }
@@ -1707,7 +1730,14 @@
                         msg.extra.size = Pub.sizeConvert(msg.extra.size);
                         break;
                     case 'video':
-                        msg.message = '[暂不支持视频消息，请在手机上查看]';
+                        // msg.message = '[暂不支持视频消息，请在手机上查看]';
+                        msg.extra = msg.extra ? msg.extra : window.encodeURI(G.jsonEncode({width: 0 , height: 0 , thumbImg: ''}));
+                        msg.extra = window.decodeURI(msg.extra);
+                        msg.extra = G.jsonDecode(msg.extra);
+                        msg.extra.clientW = msg.extra.width > this.maxWidthForVideoInMessage ? this.maxWidthForVideoInMessage : msg.extra.width;
+                        msg.extra.clientW = msg.extra.clientW < this.maxWidthForVideoInMessage ? this.maxWidthForVideoInMessage : msg.extra.clientW;
+                        msg.extra.clientH = msg.extra.clientW / msg.extra.width * msg.extra.height;
+                        msg.extra.thumb = msg.thumbImg;
                         break;
                 }
             } ,
@@ -1739,7 +1769,14 @@
                         msg.extra.size = Pub.sizeConvert(msg.extra.size);
                         break;
                     case 'video':
-                        msg.message = '[暂不支持视频消息，请在手机上查看]';
+                        msg.extra = msg.extra ? msg.extra : window.encodeURI(G.jsonEncode({width: 0 , height: 0 , thumbImg: ''}));
+                        msg.extra = window.decodeURI(msg.extra);
+                        msg.extra = G.jsonDecode(msg.extra);
+                        msg.extra.clientW = msg.extra.width > this.maxWidthForVideoInMessage ? this.maxWidthForVideoInMessage : msg.extra.width;
+                        msg.extra.clientW = msg.extra.clientW < this.maxWidthForVideoInMessage ? this.maxWidthForVideoInMessage : msg.extra.clientW;
+                        msg.extra.clientH = msg.extra.clientW / msg.extra.width * msg.extra.height;
+                        msg.extra.thumb = msg.thumbImg;
+                        break;
                         break;
                 }
             } ,
@@ -2284,6 +2321,8 @@
                             } else {
                                 // 相同分组，更新
                                 cur.list.splice(n , 1 , msg);
+                                // 添加服务端消息到客户端
+                                history.history.push(msg);
                             }
                             this.$nextTick(() => {
                                 this.bottomForHistoryBySessionId(sessionId);

@@ -5,12 +5,13 @@
     <meta http-equiv="Content-Type" content="text/html">
     <link rel="icon" href="file/logo.png">
     <title>OJBK-嗨聊</title>
-    <link rel="stylesheet" href="plugin/Run/base.css?version=32.0">
-    <link rel="stylesheet" href="css/public.css?version=32.0">
-    <link rel="stylesheet" href="css/index.css?version=32.0">
+    <link rel="stylesheet" href="plugin/Run/base.css?version=33.0">
+    <link rel="stylesheet" href="css/public.css?version=33.0">
+    <link rel="stylesheet" href="css/index.css?version=33.0">
 </head>
 <body>
-<div class="loading" id="loading">
+
+<div id="loading" class="loading">
     <div class="load-anime"></div>
 </div>
 
@@ -350,7 +351,7 @@
                                                     <!-- 文本 -->
                                                     <div class="text" v-if="m.type == 'text'" v-html="m.message"></div>
                                                     <!-- 其他消息类型 -->
-                                                    <div class="text" v-if="m.type == 'video'" v-html="m.message"></div>
+                                                    <!--<div class="text" v-if="m.type == 'video'" v-html="m.message"></div>-->
 
 
                                                     <!-- 消息撤回 -->
@@ -360,6 +361,10 @@
                                                     <!-- 图片 -->
                                                     <div class="image" v-if="m.type == 'image'">
                                                         <img :src="m.message" :ref="'image_' + v.id + '_' + m.id" :data-sessionId="v.id" :data-messageId="m.id" :width="m.extra.clientW" :height="m.extra.clientH" @click="openImageEvent" class="image">
+                                                    </div>
+                                                    <!-- 视频 -->
+                                                    <div class="video" v-if="m.type == 'video'">
+                                                        <video :src="m.message" controls="controls" :poster="m.extra.thumb" :ref="'video_' + v.id + '_' + m.id" :data-sessionId="v.id" :data-messageId="m.id" :width="m.extra.clientW" :height="m.extra.clientH"></video>
                                                     </div>
                                                     <!-- 名片 -->
                                                     <div class="card" v-if="m.type == 'card'" :data-userId="m.user_for_card.id" @click.stop="switchAvatarEvent" >
@@ -513,7 +518,7 @@
                                                     <!-- 文本 -->
                                                     <div class="text" v-if="m.type == 'text'" v-html="m.message"></div>
                                                     <!-- 其他消息类型 -->
-                                                    <div class="text" v-if="m.type == 'video'" v-html="m.message"></div>
+                                                    <!--<div class="text" v-if="m.type == 'video'" v-html="m.message"></div>-->
                                                     <!-- 消息撤回 -->
                                                     <div class="notification" v-if="m.type == 'withdraw'">{{ m.message }}</div>
                                                     <!-- 系统通知 -->
@@ -521,6 +526,10 @@
                                                     <!-- 图片 -->
                                                     <div class="image" v-if="m.type == 'image'">
                                                         <img :src="m.message" :ref="'image_' + v.id + '_' + m.id" :data-sessionId="v.id" :data-messageId="m.id" @click="openImageEvent" class="image">
+                                                    </div>
+                                                    <!-- 视频 -->
+                                                    <div class="video" v-if="m.type == 'video'">
+                                                        <video :src="m.message" controls="controls" :poster="m.extra.thumb" :ref="'video_' + v.id + '_' + m.id" :data-sessionId="v.id" :data-messageId="m.id" :width="m.extra.clientW" :height="m.extra.clientH"></video>
                                                     </div>
                                                     <!-- 名片 -->
                                                     <div class="card" v-if="m.type == 'card'" :data-userId="m.user_for_card.id" @click.stop="switchAvatarEvent" >
@@ -1216,17 +1225,17 @@
 <!--<script src="lib/clipboard.min.js"></script>-->
 
 <!-- 个人依赖 -->
-<script src="plugin/SmallJs/SmallJs.js?version=32.0"></script>
-<script src="lib/RTC.js?version=32.0"></script>
+<script src="plugin/SmallJs/SmallJs.js?version=33.0"></script>
+<script src="lib/RTC.js?version=33.0"></script>
 
 <!-- 资源依赖 -->
 <script src="lib/face.js"></script>
 
 <!-- 系统依赖 -->
-<script src="js/mixin.js?version=32.0"></script>
-<script src="js/Aes.js?version=32.0"></script>
-<script src="js/common.js?version=32.0"></script>
-<script src="js/global.js?version=32.0"></script>
-<script src="js/index.js?version=32.0"></script>
+<script src="js/mixin.js?version=33.0"></script>
+<script src="js/Aes.js?version=33.0"></script>
+<script src="js/common.js?version=33.0"></script>
+<script src="js/global.js?version=33.0"></script>
+<script src="js/index.js?version=33.0"></script>
 </body>
 </html>

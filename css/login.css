@@ -25,16 +25,81 @@
 .login .qrcode .top {
     padding: 42px 0 12px;
     text-align: center;
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-    -o-box-sizing: border-box;
 }
 
-.login .qrcode .top .image {
+.login .qrcode .top .outer {
+    height: 270px;
+    position: relative;
+}
+
+.login .qrcode .top .outer .inner {
     width: 270px;
     height: 270px;
+    text-align: center;
+    line-height: 270px;
+    background-color: #d4d4d4;
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+}
+
+.login .qrcode .top .outer .inner .image {
+    width: 100%;
+    height: 100%;
+    vertical-align: top;
+}
+
+.login .qrcode .top .outer .inner .text {
+    color: #666;
+    font-size: 14px;
+}
+
+
+.login .qrcode .outer .inner .mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.login .qrcode .outer .inner .mask .mask-inner {
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    line-height: 80px;
+    background-color: white;
+    transform: translate(-50% , -50%);
+    -webkit-transform: translate(-50% , -50%);
+    -moz-transform: translate(-50% , -50%);
+    -ms-transform: translate(-50% , -50%);
+    -o-transform: translate(-50% , -50%);
+    border-radius: 100px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 0 12px 0 #989898;
+    -webkit-box-shadow: 0 0 12px 0 #989898;
+    -moz-box-shadow: 0 0 12px 0 #989898;
+    -ms-box-shadow: 0 0 12px 0 #989898;
+    -o-box-shadow: 0 0 12px 0 #989898;
+}
+
+.login .qrcode .outer .inner .mask .mask-inner .image {
+    width: 50px;
+    height: 50px;
+    vertical-align: middle;
+}
+
+.login .qrcode .outer .inner .mask .mask-inner .round {
+    animation: round 0.3s linear;
 }
 
 .login .qrcode .mid {
