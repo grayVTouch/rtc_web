@@ -17,6 +17,8 @@
                 effective: true ,
                 // 继续动画
                 animated: true ,
+                // 是否第一次
+                once: true ,
             } ,
             timer: {
                 refresh: null
@@ -49,10 +51,15 @@
                     platform: topContext.platform ,
                     open () {
                         // 连接打开的情况下才能够进行初始化
-                        self.initialize();
+                        if (self.val.once) {
+                            self.val.once = false;
+                            self.initialize();
+                        }
                     } ,
                     close () {
-                        self.val.mode = 'qrcode';
+                        if (self.val.mode == 'user') {
+                            self.val.mode = 'qrcode';
+                        }
                         self.val.effective = false;
                     } ,
                 });

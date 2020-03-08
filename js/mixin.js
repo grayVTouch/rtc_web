@@ -25,28 +25,29 @@ Vue.mixin({
 
         // 版本升级
         __upgrade () {
-            const upgradeLog = G.s.get('_upgrade_log_');
+            const key = '_upgrade_log_1_';
+            const upgradeLog = G.s.get(key);
             if (!G.isNull(upgradeLog)) {
                 return ;
             }
             let str = '';
-            str += '<h2 style="text-align: center;padding-bottom: 12px;font-weight:bold;">版本升级：1.0.0 -> 1.0.1</h2>';
+            str += '<h2 style="text-align: center;padding-bottom: 12px;font-weight:bold;">版本升级：1.0.1 -> 1.0.2</h2>';
             str += '<ul style="list-style-type: decimal;list-style-position: inside;font-size: 13px;">';
-            str += '    <li>功能新增：优化登录界面信息展示</li>';
-            str += '    <li>功能新增；新增视频消息播放功能</li>';
-            str += '    <li>Bug修复：修复服务端重启后记录重复Bug</li>';
-            str += '    <li>Bug修复：修复切换会话记录同步导致消息丢失Bug</li>';
+            str += '    <li>功能新增：优化登录界面显示</li>';
+            str += '    <li>功能新增：优化文件拖拽上传和截屏上传，区分图片和文件</li>';
+            str += '    <li>Bug 修复；修复文件上传后大小显示错误</li>';
             str += '</ul>';
             str += '<h4 style="font-weight: bold;padding-top: 12px;">请点击确定按钮关闭该提示</h4>';
             layer.alert(str , {
                 btn: ['关闭'],
                 closeBtn: false ,
+                maxWidth: '800px' ,
                 btn1 (index) {
-                    G.s.set('_upgrade_log_');
+                    G.s.set(key , 1);
                     layer.close(index);
                 } ,
             });
-            console.log('版本升级提示');
+            // console.log('版本升级提示');
         } ,
 
         __initDom () {

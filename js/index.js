@@ -1724,9 +1724,10 @@
                         msg.extra.format_time = Pub.formatTimeForVoiceCall(msg.extra.duration);
                         break;
                     case 'file':
-                        msg.extra = msg.extra ? msg.extra : window.encodeURI(G.jsonEncode({name: '' , size: ''}));
+                        msg.extra = msg.extra ? msg.extra : window.encodeURI(G.jsonEncode({name: '' , size: 0}));
                         msg.extra = window.decodeURI(msg.extra);
                         msg.extra = G.jsonDecode(msg.extra);
+                        msg.extra.originSize = msg.extra.size;
                         msg.extra.size = Pub.sizeConvert(msg.extra.size);
                         break;
                     case 'video':
@@ -1764,8 +1765,10 @@
                         msg.extra.format_time = Pub.formatTimeForVoiceCall(msg.extra.duration);
                         break;
                     case 'file':
+                        msg.extra = msg.extra ? msg.extra : window.encodeURI(G.jsonEncode({name: '' , size: 0}));
                         msg.extra = window.decodeURI(msg.extra);
                         msg.extra = G.jsonDecode(msg.extra);
+                        msg.extra.originSize = msg.extra.size;
                         msg.extra.size = Pub.sizeConvert(msg.extra.size);
                         break;
                     case 'video':
@@ -2545,7 +2548,8 @@
                                 // 普通文件
                                 const messageId = this.sendTempFileBySessionIdAndFileAndInfo(sessionId , res , {
                                     name: curFile.name ,
-                                    size: curFile.size
+                                    size: curFile.size ,
+                                    originSize: curFile.size ,
                                 });
                                 // 文件上传到亚马逊云存储
                                 Pub.fileUpload(formData , (res) => {
@@ -2772,7 +2776,10 @@
                 const session = this.findSessionById(sessionId);
                 const message = this.findMessageInMessageGroupBySessionIdAndMessageId(sessionId , messageId);
                 const encMessage = Pub.enc(true , message.file , this.user.aes_key);
-                const extra = window.encodeURI(G.jsonEncode(message.extra));
+                const extra = window.encodeURI(G.jsonEncode({
+                    name: message.extra.name ,
+                    size: message.extra.originSize ,
+                }));
                 message.request = this.send('sendFileForPrivate' , {
                     friend_id: session.other.id ,
                     message: encMessage ,
@@ -2806,7 +2813,10 @@
                 const session = this.findSessionById(sessionId);
                 const message = this.findMessageInMessageGroupBySessionIdAndMessageId(sessionId , messageId);
                 const encMessage = Pub.enc(true , message.file , this.user.aes_key);
-                const extra = window.encodeURI(G.jsonEncode(message.extra));
+                const extra = window.encodeURI(G.jsonEncode({
+                    name: message.extra.name ,
+                    size: message.extra.originSize ,
+                }));
                 message.request = this.send('sendFileForGroup' , {
                     group_id: session.target_id ,
                     message: encMessage ,
@@ -4329,6 +4339,7 @@
                         e.preventDefault();
                         // console.log(item.kind , item.type);
                         const file = item.getAsFile();
+                        console.log(file);
                         this.fileUploadBySessionIdAndTypeAndFiles(sessionId , 'image' , [file]);
                     } else {
                         // 其他待扩充的类型
@@ -4359,7 +4370,15 @@
                         e.preventDefault();
                         // console.log(item.kind , item.type);
                         const file = item.getAsFile();
-                        this.fileUploadBySessionIdAndTypeAndFiles(sessionId , 'file' , [file]);
+                        console.log(file , file.name , G.getFileSuffix(file.name));
+                        let type = 'file';
+                        if (G.isString(file.name)) {
+                            const extension = G.getFileSuffix(file.name);
+                            if (['png' , 'jpg' , 'jpeg' , 'gif'].indexOf(extension) >= 0) {
+                                type = 'image';
+                            }
+                        }
+                        this.fileUploadBySessionIdAndTypeAndFiles(sessionId , type , [file]);
                     } else {
                         // 其他待扩充的类型
                     }
