@@ -73,6 +73,9 @@
                 layerForForward: false ,
             } ,
 
+            // 播放器
+            audio: {} ,
+
             maxWidthForImageInMessage: 100 ,
             maxWidthForVideoInMessage: 150 ,
 
@@ -3903,9 +3906,7 @@
 
                 // audio.addClass(['playing']);
                 const icoDom = G(this.$refs['voice_ico_' + sessionId + '_' + messageId]);
-                icoDom.addClass('playing');
                 const imageInIco = G('.image' , icoDom.get(0));
-                imageInIco.addClass('hide');
 
                 // todo 使音频文件播放出来
                 // console.log(audio.get(0));
@@ -3915,15 +3916,48 @@
                 const audio = G(this.$refs['audio_' + sessionId + '_' + messageId]);
                 const audioSrc = audio.native('src');
                 const audioKey = 'audio_' + sessionId + '_' + messageId;
-                const amr = new BenzAMRRecorder();
-                amr.initWithUrl(audioSrc).then(function() {
-                    // 播放
-                    amr.play()
-                });
-                amr.onEnded(function() {
+
+                // if (G.isArray(this.audio[sessionId])) {
+                //     const audios = this.audio[sessionId];
+                //     for (let i = 0; i < audios.length; ++i)
+                //     {
+                //         const voice = audios[i];
+                //         voice.pause();
+                //         console.log('暂停控制!!!');
+                //         audios.splice(i , 1);
+                //         i--;
+                //     }
+                // }
+                // const amr = new BenzAMRRecorder();
+                // if (!G.isArray(this.audio[sessionId])) {
+                //     this.audio[sessionId] = [];
+                // }
+                // this.audio[sessionId].push(amr);
+                if (!G.isValid(this.audio[sessionId])) {
+                    this.audio[sessionId] = new BenzAMRRecorder();
+                }
+                const amr = this.audio[sessionId];
+                if (!amr.isInit()) {
+                    icoDom.addClass('playing');
+                    imageInIco.addClass('hide');
+                    amr.initWithUrl(audioSrc).then(function() {
+                        amr.__isInitialize__ = true;
+                        // 播放
+                        amr.play()
+                    });
+                    amr.onEnded(function() {
+                        icoDom.removeClass('playing');
+                        imageInIco.removeClass('hide');
+                    });
+                } else {
                     icoDom.removeClass('playing');
                     imageInIco.removeClass('hide');
-                });
+                    amr.setPosition(0);
+                    icoDom.addClass('playing');
+                    imageInIco.addClass('hide');
+                }
+
+
 
                 const message = this.findMessageBySessionIdAndMessageId(sessionId, messageId);
                 if (message === false) {

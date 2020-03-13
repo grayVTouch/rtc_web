@@ -25,17 +25,15 @@ Vue.mixin({
 
         // 版本升级
         __upgrade () {
-            const key = '_upgrade_log_1_';
+            const key = '_upgrade_log_2_';
             const upgradeLog = G.s.get(key);
             if (!G.isNull(upgradeLog)) {
                 return ;
             }
             let str = '';
-            str += '<h2 style="text-align: center;padding-bottom: 12px;font-weight:bold;">版本升级：1.0.1 -> 1.0.2</h2>';
+            str += '<h2 style="text-align: center;padding-bottom: 12px;font-weight:bold;">版本升级：1.0.2 -> 1.0.3</h2>';
             str += '<ul style="list-style-type: decimal;list-style-position: inside;font-size: 13px;">';
-            str += '    <li>功能新增：优化登录界面显示</li>';
-            str += '    <li>功能新增：优化文件拖拽上传和截屏上传，区分图片和文件</li>';
-            str += '    <li>Bug 修复；修复文件上传后大小显示错误</li>';
+            str += '    <li>Bug 修复；修复重复点击语音播放出现多路播放的情况</li>';
             str += '</ul>';
             str += '<h4 style="font-weight: bold;padding-top: 12px;">请点击确定按钮关闭该提示</h4>';
             layer.alert(str , {
