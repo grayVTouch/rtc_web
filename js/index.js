@@ -2378,35 +2378,37 @@
                     return ;
                 }
                 if (e.ctrlKey || e.shiftKey) {
-                    const cNodes = tar.native('childNodes');
-                    // 换行
-                    const position = G.getCursorPointForContentEditableElement(e.currentTarget);
-                    // console.log(keyCode , e.ctrlKey , e.shiftKey , position);
-                    if (position.node.nodeType !== 1) {
-                        const len = position.node.textContent.length;
-                        if (position.position === len && cNodes.length > 0 && cNodes[cNodes.length - 1] === position.node) {
+                    if (e.ctrlKey) {
+                        const cNodes = tar.native('childNodes');
+                        // 换行
+                        const position = G.getCursorPointForContentEditableElement(e.currentTarget);
+                        // console.log(keyCode , e.ctrlKey , e.shiftKey , position);
+                        if (position.node.nodeType !== 1) {
+                            const len = position.node.textContent.length;
+                            if (position.position === len && cNodes.length > 0 && cNodes[cNodes.length - 1] === position.node) {
+                                const br = document.createElement('br');
+                                const br1 = document.createElement('br');
+                                tar.append(br);
+                                tar.append(br1);
+                                G.setCursorPointForContentEditableElement(tar.get(0) , 'last')
+                            } else {
+                                const chars = position.node.textContent.split('');
+                                chars.splice(position.position , 0 , "\n");
+                                position.node.textContent = chars.join('');
+                                G.setCursorPointForContentEditableElement(position.node , position.position + 1);
+                            }
+                        } else {
+                            const endPosition = position.position;
                             const br = document.createElement('br');
-                            const br1 = document.createElement('br');
-                            tar.append(br);
-                            tar.append(br1);
-                            G.setCursorPointForContentEditableElement(tar.get(0) , 'last')
-                        } else {
-                            const chars = position.node.textContent.split('');
-                            chars.splice(position.position , 0 , "\n");
-                            position.node.textContent = chars.join('');
-                            G.setCursorPointForContentEditableElement(position.node , position.position + 1);
+                            if (endPosition >= cNodes.length) {
+                                tar.append(br);
+                            } else {
+                                tar.get(0).insertBefore(br , cNodes[endPosition]);
+                            }
+                            G.setCursorPointForContentEditableElement(tar.get(0) , position.position + 1);
                         }
-                    } else {
-                        const endPosition = position.position;
-                        const br = document.createElement('br');
-                        if (endPosition >= cNodes.length) {
-                            tar.append(br);
-                        } else {
-                            tar.get(0).insertBefore(br , cNodes[endPosition]);
-                        }
-                        G.setCursorPointForContentEditableElement(tar.get(0) , position.position + 1);
+                        tar.origin('focus');
                     }
-                    tar.origin('focus');
                     return ;
                 }
                 this.sendBySessionId(sessionId);
