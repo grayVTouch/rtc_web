@@ -34,6 +34,29 @@ body {
 }
 
 
+.web-app {
+    position: fixed;
+    left: 60px;
+    bottom: 60px;
+    color: #d3d3d3;
+}
+
+.web-app .link {
+    font-size: 14px;
+}
+
+.web-app .link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.web-app .delimiter {
+    margin: 0 10px;
+    font-size: 12px;
+    position: relative;
+    top: -1px;
+}
+
 .loading {
     position: fixed;
     left: 0;

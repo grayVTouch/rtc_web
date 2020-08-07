@@ -1152,6 +1152,7 @@
     font-size: 14px;
     word-break: break-all;
     min-height: 19px;
+    white-space: pre-wrap;
 }
 
 .histories .history .message > .in .group .line .content > .in > .text .image {
@@ -1851,6 +1852,7 @@
     font-size: 14px;
     overflow: hidden;
     overflow-y: auto;
+    white-space: pre;
 }
 
 /*** 截屏的图片 ***/

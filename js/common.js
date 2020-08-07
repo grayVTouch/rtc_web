@@ -184,7 +184,6 @@ const Pub = {
         }else{                                            //其他转化成GB
             size = (limit/(1024 * 1024 * 1024)).toFixed(2) + "GB"
         }
-
         let sizeStr = size + "";                        //转成字符串
         let index = sizeStr.indexOf(".");                    //获取小数点处的索引
         let dou = sizeStr.substr(index + 1 ,2);           //获取小数点后两位的值
@@ -196,16 +195,24 @@ const Pub = {
 
     // 过滤掉 html 中的 div 和 br 换行符
     stripTags (html) {
+        // console.log('原始 html' , html);
         // 过滤掉成对的标签
         const regForDouble = /<(?!a)(.+?)\s*.*?>(.*?)<\/\1>/g;
         // const regForSingle = /<(.+?)>/g;
         const regForSingleExcludeImg = /<(?!img).*?>/g;
         const regForStyle = /style=(").*?\1/g;
         const regForSpace = /&nbsp;/g;
-        let res = html.replace(regForDouble , '$2');
+        const regForWrap = /\n|\r|\n\r/g;
+        const regForBr = /<br.*?>/g;
+        const regForLastWhiteSpaceLetter = /(\n|\r|\r\n)*$/;
+        let res = html.replace(regForDouble , "$2\n");
+            res = res.replace(regForWrap , '\n');
+            res = res.replace(regForBr , '\n');
             res = res.replace(regForSingleExcludeImg , '');
             res = res.replace(regForStyle , ' ');
-            res = res.replace(regForSpace , ' ');
+            res = res.replace(regForLastWhiteSpaceLetter , '');
+            // res = res.replace(regForSpace , ' ');
+        // window.lastStr = res;
         return res;
     } ,
 

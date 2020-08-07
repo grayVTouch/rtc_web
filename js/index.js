@@ -224,6 +224,7 @@
                 // 好友
                 friend: [] ,
             } ,
+
         } ,
 
         mixins: [
@@ -245,6 +246,10 @@
         },
 
         methods: {
+
+            initDom () {
+
+            } ,
 
             // 从群组中删除好友
             delFriendInLayer (friendId) {
@@ -2368,6 +2373,42 @@
             inputKeyUpEvent (e) {
                 const tar = G(e.currentTarget);
                 const sessionId = tar.data('sessionId');
+                const keyCode = e.keyCode;
+                if (keyCode !== 13) {
+                    return ;
+                }
+                if (e.ctrlKey || e.shiftKey) {
+                    const cNodes = tar.native('childNodes');
+                    // 换行
+                    const position = G.getCursorPointForContentEditableElement(e.currentTarget);
+                    // console.log(keyCode , e.ctrlKey , e.shiftKey , position);
+                    if (position.node.nodeType !== 1) {
+                        const len = position.node.textContent.length;
+                        if (position.position === len && cNodes.length > 0 && cNodes[cNodes.length - 1] === position.node) {
+                            const br = document.createElement('br');
+                            const br1 = document.createElement('br');
+                            tar.append(br);
+                            tar.append(br1);
+                            G.setCursorPointForContentEditableElement(tar.get(0) , 'last')
+                        } else {
+                            const chars = position.node.textContent.split('');
+                            chars.splice(position.position , 0 , "\n");
+                            position.node.textContent = chars.join('');
+                            G.setCursorPointForContentEditableElement(position.node , position.position + 1);
+                        }
+                    } else {
+                        const endPosition = position.position;
+                        const br = document.createElement('br');
+                        if (endPosition >= cNodes.length) {
+                            tar.append(br);
+                        } else {
+                            tar.get(0).insertBefore(br , cNodes[endPosition]);
+                        }
+                        G.setCursorPointForContentEditableElement(tar.get(0) , position.position + 1);
+                    }
+                    tar.origin('focus');
+                    return ;
+                }
                 this.sendBySessionId(sessionId);
             } ,
 
@@ -2401,8 +2442,14 @@
                 const session = this.findSessionById(sessionId);
                 const inputDom = G(this.$refs['input_' + sessionId]);
                 const html = inputDom.html();
+
+                // console.log(text);
+
                 let text = Pub.htmlToTextForMessage(html);
                     text = Pub.stripTags(text);
+
+                    console.log(text);
+
                 const encText = Pub.enc(true , text , this.user.aes_key);
                 // const isBottom = this.isBottomForHistoryBySessionId(sessionId);
                 const messageId = this.genId();
@@ -4356,18 +4403,19 @@
                 {
                     const item = items[i];
                     if (item.kind == 'string') {
-                        // console.log('字符串');
+                        console.log(item);
                         // const html = inputDom.html();
                         // if (html.length > 0) {
                         //     return ;
                         // }
                         // e.preventDefault();
                         // // 粘贴的内容是字符串
-                        // item.getAsString((val) => {
-                        //     // 过滤掉 html 标签（除 img 等表情标签）
-                        //     val = Pub.stripFromClipboard(val);
-                        //     inputDom.html(inputDom.html() + val);
-                        // });
+                        item.getAsString((val) => {
+                            // 过滤掉 html 标签（除 img 等表情标签）
+                            // val = Pub.stripFromClipboard(val);
+                            // inputDom.html(inputDom.html() + val);
+                            // console.log('粘贴的内容：' , val);
+                        });
                     } else if (item.kind == 'file') {
                         // 粘贴的内容是文件
                         e.preventDefault();

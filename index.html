@@ -5,9 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html">
     <link rel="icon" href="file/logo.png">
     <title>OJBK-嗨聊</title>
-    <link rel="stylesheet" href="plugin/Run/base.css?version=1.0.3">
-    <link rel="stylesheet" href="css/public.css?version=1.0.3">
-    <link rel="stylesheet" href="css/index.css?version=1.0.3">
+    <link rel="stylesheet" href="plugin/Run/base.css?version=1.0.4">
+    <link rel="stylesheet" href="css/public.css?version=1.0.4">
+    <link rel="stylesheet" href="css/index.css?version=1.0.4">
 </head>
 <body>
 
@@ -20,7 +20,7 @@
 </div>
 
 <div class="web-version">
-    <span>嗨聊-OJBK Version: 1.0.3</span>
+    <span>嗨聊-OJBK Version: 1.0.4</span>
 </div>
 
 <div id="app" class="app hide">
@@ -700,7 +700,7 @@
                         </div>
                         <!-- 输入框 -->
                         <div class="input">
-                            <div class="text" contenteditable="true" :ref="'input_' + v.id" :data-sessionId="v.id" @keyup.enter="inputKeyUpEvent" @paste="pasteEvent" @dragover="dragOverEvent" @drop="dropEvent">
+                            <div class="text" contenteditable="true" :ref="'input_' + v.id" :data-sessionId="v.id" @keyup="inputKeyUpEvent" @paste="pasteEvent" @dragover="dragOverEvent" @drop="dropEvent">
                                 <!-- 截图 -->
                                 <!--<img src="file/demo.png" class="image screenshot" @click="imageClickEventForInput">-->
                                 <!--&lt;!&ndash; 文件 &ndash;&gt;-->
@@ -716,7 +716,7 @@
                             </div>
                         </div>
                         <!-- 提交按钮 -->
-                        <div class="btn"><!--按下Ctrl+Enter换行--><button type="button" class="send" @click="sendBySessionId(v.id)">发送</button></div>
+                        <div class="btn">按下Ctrl+Enter 或 Ctrl+Shift 换行<button type="button" class="send" @click="sendBySessionId(v.id)">发送</button></div>
                     </div>
 
                 </div>
@@ -1233,17 +1233,17 @@
 <!--<script src="lib/clipboard.min.js"></script>-->
 
 <!-- 个人依赖 -->
-<script src="plugin/SmallJs/SmallJs.js?version=1.0.3"></script>
-<script src="lib/RTC.js?version=1.0.3"></script>
+<script src="plugin/SmallJs/SmallJs.js?version=1.0.4"></script>
+<script src="lib/RTC.js?version=1.0.4"></script>
 
 <!-- 资源依赖 -->
 <script src="lib/face.js"></script>
 
 <!-- 系统依赖 -->
-<script src="js/mixin.js?version=1.0.3"></script>
-<script src="js/Aes.js?version=1.0.3"></script>
-<script src="js/common.js?version=1.0.3"></script>
-<script src="js/global.js?version=1.0.3"></script>
-<script src="js/index.js?version=1.0.3"></script>
+<script src="js/mixin.js?version=1.0.4"></script>
+<script src="js/Aes.js?version=1.0.4"></script>
+<script src="js/common.js?version=1.0.4"></script>
+<script src="js/global.js?version=1.0.4"></script>
+<script src="js/index.js?version=1.0.4"></script>
 </body>
 </html>
