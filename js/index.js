@@ -4006,6 +4006,14 @@
                     icoDom.addClass('playing');
                     imageInIco.addClass('hide');
                 }
+                for (let k in this.audio)
+                {
+                    if (k === audioKey) {
+                        continue ;
+                    }
+                    const cur = this.audio[k];
+                    cur.stop();
+                }
                 const message = this.findMessageBySessionIdAndMessageId(sessionId, messageId);
                 if (message === false) {
                     return;
