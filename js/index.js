@@ -3982,10 +3982,11 @@
                 //     this.audio[sessionId] = [];
                 // }
                 // this.audio[sessionId].push(amr);
-                if (!G.isValid(this.audio[sessionId])) {
-                    this.audio[sessionId] = new BenzAMRRecorder();
+                if (!G.isValid(this.audio[audioKey])) {
+                    this.audio[audioKey] = new BenzAMRRecorder();
                 }
-                const amr = this.audio[sessionId];
+
+                const amr = this.audio[audioKey];
                 if (!amr.isInit()) {
                     icoDom.addClass('playing');
                     imageInIco.addClass('hide');
@@ -4005,9 +4006,6 @@
                     icoDom.addClass('playing');
                     imageInIco.addClass('hide');
                 }
-
-
-
                 const message = this.findMessageBySessionIdAndMessageId(sessionId, messageId);
                 if (message === false) {
                     return;
