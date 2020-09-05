@@ -25,16 +25,15 @@ Vue.mixin({
 
         // 版本升级
         __upgrade () {
-            const key = '_upgrade_log_4_';
+            const key = '_upgrade_log_5_';
             const upgradeLog = G.s.get(key);
             if (!G.isNull(upgradeLog)) {
                 return ;
             }
             let str = '';
-            str += '<h2 style="text-align: center;padding-bottom: 12px;font-weight:bold;">版本升级：1.0.4 -> 1.0.5</h2>';
+            str += '<h2 style="text-align: center;padding-bottom: 12px;font-weight:bold;">版本升级：1.0.5 -> 1.0.6</h2>';
             str += '<ul style="list-style-type: decimal;list-style-position: inside;font-size: 13px;">';
-            str += '    <li>修复语音播放问题</li>';
-            str += '    <li>优化连接</li>';
+            str += '    <li>修复右键复制功能bug</li>';
             str += '</ul>';
             str += '<h4 style="font-weight: bold;padding-top: 12px;">请点击确定按钮关闭该提示</h4>';
             layer.alert(str , {

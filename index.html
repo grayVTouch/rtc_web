@@ -5,9 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html">
     <link rel="icon" href="file/logo.png">
     <title>OJBK-嗨聊</title>
-    <link rel="stylesheet" href="plugin/Run/base.css?version=1.0.5">
-    <link rel="stylesheet" href="css/public.css?version=1.0.5">
-    <link rel="stylesheet" href="css/index.css?version=1.0.5">
+    <link rel="stylesheet" href="plugin/Run/base.css?version=1.0.6">
+    <link rel="stylesheet" href="css/public.css?version=1.0.6">
+    <link rel="stylesheet" href="css/index.css?version=1.0.6">
 </head>
 <body>
 
@@ -20,7 +20,7 @@
 </div>
 
 <div class="web-version">
-    <span>嗨聊-OJBK Version: 1.0.5</span>
+    <span>嗨聊-OJBK Version: 1.0.6</span>
 </div>
 
 <div id="app" class="app hide">
@@ -141,7 +141,7 @@
                 <!-- 会话列表 -->
                 <div class="session" v-show="val.tab == 'session'" ref="session">
 
-                    <div class="line" v-for="v in session" :ref="'session_' + v.id" :data-sessionId="v.id" :data-id="v.id" @mousedown.stop="sessionRightKeyEvent" @click="switchSessionEvent" :class="{
+                    <div class="line" v-for="v in session" :ref="'session_' + v.id" :data-sessionId="v.id" :data-id="v.id" @contextmenu.prevent="contextMenuEvent" @mousedown.stop="sessionRightKeyEvent" @click="switchSessionEvent" :class="{
                         top: v.top >= 1 ,
                         cur: v.id == sessionForCur.id ,
                         mute: v.can_notice < 1 ,
@@ -1233,17 +1233,17 @@
 <!--<script src="lib/clipboard.min.js"></script>-->
 
 <!-- 个人依赖 -->
-<script src="plugin/SmallJs/SmallJs.js?version=1.0.5"></script>
-<script src="lib/RTC.js?version=1.0.5"></script>
+<script src="plugin/SmallJs/SmallJs.js?version=1.0.6"></script>
+<script src="lib/RTC.js?version=1.0.6"></script>
 
 <!-- 资源依赖 -->
 <script src="lib/face.js"></script>
 
 <!-- 系统依赖 -->
-<script src="js/mixin.js?version=1.0.5"></script>
-<script src="js/Aes.js?version=1.0.5"></script>
-<script src="js/common.js?version=1.0.5"></script>
-<script src="js/global.js?version=1.0.5"></script>
-<script src="js/index.js?version=1.0.5"></script>
+<script src="js/mixin.js?version=1.0.6"></script>
+<script src="js/Aes.js?version=1.0.6"></script>
+<script src="js/common.js?version=1.0.6"></script>
+<script src="js/global.js?version=1.0.6"></script>
+<script src="js/index.js?version=1.0.6"></script>
 </body>
 </html>

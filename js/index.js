@@ -912,7 +912,17 @@
                     });
                 });
 
-                document.oncontextmenu = () => { return false; };
+                document.oncontextmenu = (e) => {
+                    const tar = e.target;
+                    // console.log(tar);
+                    switch (tar)
+                    {
+                        case this.$el:
+                            return true;
+                        default:
+                            return false;
+                    }
+                };
 
             } ,
 
@@ -1709,6 +1719,7 @@
             // 私聊消息处理
             handleMessageForPrivate (msg) {
                 msg.message = Pub.dec(msg.old < 1 , msg.message , msg.aes_key);
+                msg.__message__ = msg.message;
                 msg.user = msg.user ? msg.user : {};
                 msg.user.avatar = G.isValid(msg.user.avatar) ? msg.user.avatar + '?time=' + (new Date().getTime()) : '';
                 msg.user_for_card = msg.user_for_card ? msg.user_for_card : {};
@@ -1748,11 +1759,14 @@
                         msg.extra.clientH = msg.extra.clientW / msg.extra.width * msg.extra.height;
                         msg.extra.thumb = msg.thumbImg;
                         break;
+                    default:
+                        break;
                 }
             } ,
 
             handleMessageForGroup (msg) {
                 msg.message = Pub.dec(msg.old < 1 , msg.message , msg.aes_key);
+                msg.__message__ = msg.message;
                 msg.user = msg.user ? msg.user : {};
                 msg.group = msg.group ? msg.group : {};
                 msg.user_for_card = msg.user_for_card ? msg.user_for_card : {};
@@ -1788,6 +1802,7 @@
                         msg.extra.clientH = msg.extra.clientW / msg.extra.width * msg.extra.height;
                         msg.extra.thumb = msg.thumbImg;
                         break;
+                    default:
                         break;
                 }
             } ,
@@ -4275,7 +4290,8 @@
 
             copyMessage () {
                 const input = document.createElement('input');
-                input.value = this.messageForRightKeyLayer.message;
+                // input.value = this.messageForRightKeyLayer.message;
+                input.value = this.messageForRightKeyLayer.__message__;
                 document.body.appendChild(input);
                 input.focus();
                 input.select();
